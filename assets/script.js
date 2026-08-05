@@ -199,19 +199,26 @@
      you scroll — by the bottom of the page it reads as fully dressed.
      The dress colour follows the swatch picker.
      =============================================================== */
-  const DRESS_SCALE = isTouch ? 0.62 : 1.0;
+  const DRESS_SCALE = isTouch ? 0.88 : 1.38;
   const dressAnchor = new THREE.Group();
   const dressSpin = new THREE.Group();
   dressAnchor.add(dressSpin);
 
-  // Silhouette profile (radius, height) revolved around the Y axis —
-  // neck -> shoulder/bust swell -> waist -> hip -> tapered base.
-  const profilePts = [
-    [0.42, 4.0], [0.55, 3.5], [0.95, 3.0], [1.15, 2.3], [0.98, 1.4],
-    [0.78, 0.6], [0.80, 0.0], [1.05, -0.8], [1.12, -1.6], [0.95, -2.4],
-    [0.55, -3.0], [0.05, -3.3],
-  ];
-  const profile = profilePts.map(([x, y]) => new THREE.Vector2(x, y));
+  // Silhouette profile (radius, height) revolved around the Y axis — a
+  // realistic feminine hourglass: neck -> shoulder -> bust -> waist ->
+  // hip -> thigh, with rounded (not pointed) neck and base caps. A small
+  // set of control points is passed through a spline and densely
+  // resampled so the curve reads as an organic body line, not a faceted
+  // polyline (which was looking more like a ceramic vase than a torso).
+  const bodyControlPts = [
+    [0.34, 4.2], [0.37, 3.95], [0.62, 3.7], [0.80, 3.5], [0.84, 3.15],
+    [1.08, 2.6], [0.90, 2.15], [0.80, 1.7], [0.68, 1.1], [0.78, 0.5],
+    [0.98, -0.1], [1.16, -0.8], [1.10, -1.4], [0.92, -2.0], [0.68, -2.6],
+    [0.38, -3.1], [0.16, -3.4], [0.02, -3.6],
+  ].map(([x, y]) => new THREE.Vector2(x, y));
+  const bodySpline = new THREE.SplineCurve(bodyControlPts);
+  const profile = bodySpline.getPoints(100);
+  const profilePts = profile.map((v) => [v.x, v.y]);
   const BODY_TOP = profilePts[0][1], BODY_BOTTOM = profilePts[profilePts.length - 1][1];
 
   // Linear-interpolated body radius at an arbitrary height, so both the
@@ -253,10 +260,10 @@
   // Stand: a slim rod and a round foot, like a real dress form.
   const standMat = new THREE.MeshStandardMaterial({ color: 0x241c12, roughness: 0.45, metalness: 0.6 });
   const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 1.6, 12), standMat);
-  rod.position.y = -4.1;
+  rod.position.y = BODY_BOTTOM - 0.8;
   dressSpin.add(rod);
   const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.95, 0.14, 28), standMat);
-  foot.position.y = -4.95;
+  foot.position.y = rod.position.y - 0.87;
   dressSpin.add(foot);
 
   // The dress itself: a solid, smoothly-shaded surface sitting just
@@ -264,10 +271,11 @@
   // sweeps downward as you scroll — so it looks like it's filling in.
   const fillPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
   const dressMat = new THREE.MeshStandardMaterial({
-    color: 0xc9a24a, roughness: 0.42, metalness: 0.24, side: THREE.DoubleSide,
+    color: 0xc9a24a, roughness: 0.38, metalness: 0.2, side: THREE.FrontSide,
+    transparent: true, opacity: 0.82,
     clippingPlanes: [fillPlane],
   });
-  const DRESS_TOP = 2.9, DRESS_BOTTOM = -2.6;
+  const DRESS_TOP = 3.3, DRESS_BOTTOM = -2.6;
   const dressGeo = new THREE.LatheGeometry(profile, 56);
   dressGeo.scale(1.025, 1.025, 1.025);
   const dressMesh = new THREE.Mesh(dressGeo, dressMat);
@@ -323,7 +331,7 @@
     dressForward.set(0, 0, -1).applyQuaternion(camera.quaternion);
     dressUp.set(0, 1, 0).applyQuaternion(camera.quaternion);
     dressDesiredPos.copy(camera.position)
-      .addScaledVector(dressForward, 16.5)
+      .addScaledVector(dressForward, 21)
       .addScaledVector(dressUp, -0.3);
     if (reducedMotion) dressAnchor.position.copy(dressDesiredPos);
     else dressAnchor.position.lerp(dressDesiredPos, 0.12);
