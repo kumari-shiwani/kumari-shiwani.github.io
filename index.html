@@ -1,523 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shiwani Kumari </title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #0d0d14;
-      --surface: #13131f;
-      --card: #1a1a2e;
-      --accent: #7c5cbf;
-      --accent2: #c084fc;
-      --text: #e2e2f0;
-      --muted: #8888aa;
-      --border: #2a2a45;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-    }
-
-    /* ── NAV ── */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 2.5rem;
-      background: rgba(13,13,20,0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .logo {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.4rem;
-      background: linear-gradient(135deg, var(--accent2), #a78bfa);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    nav ul {
-      list-style: none;
-      display: flex;
-      gap: 2rem;
-    }
-
-    nav a {
-      text-decoration: none;
-      color: var(--muted);
-      font-size: 0.9rem;
-      font-weight: 500;
-      letter-spacing: 0.04em;
-      transition: color 0.2s;
-    }
-
-    nav a:hover { color: var(--accent2); }
-
-    /* ── HERO ── */
-    #hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 6rem 2rem 4rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    #hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 70% 60% at 30% 40%, rgba(124,92,191,0.18) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 50% at 75% 60%, rgba(192,132,252,0.12) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .hero-inner { max-width: 680px; position: relative; }
-
-    .hero-tag {
-      display: inline-block;
-      padding: 0.35rem 1rem;
-      border: 1px solid var(--accent);
-      border-radius: 999px;
-      font-size: 0.78rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--accent2);
-      margin-bottom: 1.5rem;
-    }
-
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(2.6rem, 6vw, 4.2rem);
-      line-height: 1.15;
-      margin-bottom: 1.2rem;
-    }
-
-    h1 span {
-      background: linear-gradient(135deg, var(--accent2) 0%, #a78bfa 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .hero-sub {
-      font-size: 1.1rem;
-      color: var(--muted);
-      max-width: 480px;
-      margin: 0 auto 2.2rem;
-    }
-
-    .btn-row {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      padding: 0.75rem 1.9rem;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      transition: transform 0.15s, box-shadow 0.15s;
-    }
-
-    .btn:hover { transform: translateY(-2px); }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
-      box-shadow: 0 0 20px rgba(124,92,191,0.45);
-    }
-
-    .btn-primary:hover { box-shadow: 0 0 32px rgba(124,92,191,0.65); }
-
-    .btn-ghost {
-      border: 1px solid var(--border);
-      color: var(--text);
-      background: transparent;
-    }
-
-    .btn-ghost:hover { border-color: var(--accent2); color: var(--accent2); }
-
-    /* ── SECTIONS ── */
-    section { padding: 5.5rem 2rem; }
-
-    .section-label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--accent2);
-      font-weight: 600;
-      margin-bottom: 0.6rem;
-    }
-
-    .section-title {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(1.8rem, 4vw, 2.5rem);
-      margin-bottom: 3rem;
-    }
-
-    .container { max-width: 960px; margin: 0 auto; }
-
-    /* ── ABOUT ── */
-    #about { background: var(--surface); }
-
-    .about-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 3rem;
-      align-items: center;
-    }
-
-    .avatar-wrap {
-      display: flex;
-      justify-content: center;
-    }
-
-    .avatar {
-      width: 240px;
-      height: 240px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Playfair Display', serif;
-      font-size: 5rem;
-      color: #fff;
-      box-shadow: 0 0 40px rgba(124,92,191,0.35);
-    }
-
-    .about-text p { color: var(--muted); margin-bottom: 1rem; font-size: 1.02rem; }
-
-    .skills-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
-      margin-top: 1.4rem;
-    }
-
-    .chip {
-      padding: 0.35rem 0.9rem;
-      border-radius: 999px;
-      background: rgba(124,92,191,0.15);
-      border: 1px solid rgba(124,92,191,0.35);
-      font-size: 0.82rem;
-      color: var(--accent2);
-    }
-
-    /* ── PROJECTS ── */
-    #projects { background: var(--bg); }
-
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.8rem;
-      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-
-    .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
-    .card:hover::before { opacity: 1; }
-
-    .card-icon { font-size: 2rem; margin-bottom: 1rem; }
-
-    .card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-
-    .card p { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
-
-    .card-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-top: 1.2rem;
-    }
-
-    .tag {
-      font-size: 0.74rem;
-      padding: 0.2rem 0.6rem;
-      border-radius: 4px;
-      background: rgba(255,255,255,0.06);
-      color: var(--muted);
-    }
-
-    /* ── EXPERIENCE ── */
-    #experience { background: var(--surface); }
-
-    .timeline { display: flex; flex-direction: column; gap: 1.6rem; }
-
-    .tl-item {
-      display: grid;
-      grid-template-columns: 140px 1fr;
-      gap: 1.5rem;
-      align-items: start;
-    }
-
-    .tl-date {
-      font-size: 0.82rem;
-      color: var(--muted);
-      padding-top: 0.2rem;
-      text-align: right;
-    }
-
-    .tl-body {
-      border-left: 2px solid var(--border);
-      padding-left: 1.5rem;
-      position: relative;
-    }
-
-    .tl-body::before {
-      content: '';
-      position: absolute;
-      left: -6px;
-      top: 6px;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--accent2);
-      box-shadow: 0 0 8px var(--accent2);
-    }
-
-    .tl-body h3 { font-size: 1rem; margin-bottom: 0.2rem; }
-
-    .tl-body .company { font-size: 0.85rem; color: var(--accent2); margin-bottom: 0.5rem; }
-
-    .tl-body p { font-size: 0.87rem; color: var(--muted); }
-
-    /* ── CONTACT ── */
-    #contact { background: var(--bg); text-align: center; }
-
-    .contact-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 3.5rem 2rem;
-      max-width: 600px;
-      margin: 0 auto;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .contact-card::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse 60% 60% at 50% 0%, rgba(124,92,191,0.1), transparent);
-      pointer-events: none;
-    }
-
-    .contact-card p { color: var(--muted); margin-bottom: 2rem; font-size: 1rem; }
-
-    .social-links {
-      display: flex;
-      justify-content: center;
-      gap: 1.2rem;
-      margin-top: 2rem;
-      flex-wrap: wrap;
-    }
-
-    .social-link {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.6rem 1.2rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 0.85rem;
-      transition: border-color 0.2s, color 0.2s;
-    }
-
-    .social-link:hover { border-color: var(--accent2); color: var(--accent2); }
-
-    /* ── FOOTER ── */
-    footer {
-      text-align: center;
-      padding: 2rem;
-      font-size: 0.8rem;
-      color: var(--muted);
-      border-top: 1px solid var(--border);
-    }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 640px) {
-      .about-grid { grid-template-columns: 1fr; }
-      .tl-item { grid-template-columns: 1fr; }
-      .tl-date { text-align: left; }
-      nav ul { gap: 1.2rem; }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Shiwani Kumari — Sportswear &amp; Knitwear Designer</title>
+<meta name="description" content="Portfolio &amp; résumé of Shiwani Kumari — Sportswear &amp; Knitwear Designer specializing in apparel product development, activewear and technical design." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧵</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
 
-  <!-- NAV -->
-  <nav>
-    <div class="logo">SK</div>
-    <ul>
-      <li><a href="#about">About</a></li>
-      <li><a href="#projects">Projects</a></li>
-      <li><a href="#experience">Experience</a></li>
-      <li><a href="#contact">Contact</a></li>
-    </ul>
-  </nav>
+<!-- loader -->
+<div id="loader" aria-hidden="true">
+  <div class="loader-mark">SK</div>
+  <div class="loader-thread"><span></span></div>
+  <div class="loader-word">threading the details…</div>
+</div>
+
+<!-- 3D scenic background -->
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
+<div class="scene-veil" aria-hidden="true"></div>
+
+<!-- custom cursor -->
+<div class="cursor-dot" aria-hidden="true"></div>
+<div class="cursor-ring" aria-hidden="true"></div>
+
+<!-- scroll progress thread -->
+<div class="progress-rail" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+
+<!-- NAV -->
+<nav id="siteNav">
+  <a href="#hero" class="logo">SK<span>.</span></a>
+  <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <ul id="navList">
+    <li><a href="#about">About</a></li>
+    <li><a href="#brands">Brands</a></li>
+    <li><a href="#competencies">Craft</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#experience">Journey</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<main>
 
   <!-- HERO -->
-  <section id="hero">
-    <div class="hero-inner">
-      <div class="hero-tag">Open to opportunities</div>
-      <h1>Hi, I'm <span>Shiwani Kumari</span></h1>
-      <p class="hero-sub">
-        A passionate software developer who loves turning ideas into elegant, impactful products.
-      </p>
+  <section id="hero" class="scene-section" data-theme="hero">
+    <div class="hero-inner reveal">
+      <p class="eyebrow">Sportswear &amp; Knitwear Designer</p>
+      <h1>Shiwani <span class="ink">Kumari</span></h1>
+      <p class="hero-role">Apparel Product Development · Activewear · Technical Design</p>
+      <p class="hero-sub">Four+ years turning trend research and tech packs into commercially loved
+        knitwear, sportswear, kids’, women’s and menswear collections — for brands like Puma, Myntra,
+        Levi’s India and Marks &amp; Spencer.</p>
+
       <div class="btn-row">
-        <a href="#projects" class="btn btn-primary">View My Work</a>
-        <a href="#contact" class="btn btn-ghost">Get in Touch</a>
+        <a href="#experience" class="btn btn-primary magnetic">
+          <span>See My Journey</span>
+        </a>
+        <button class="btn btn-ghost magnetic" id="printResume">
+          <span>Print / Save Résumé</span>
+        </button>
+      </div>
+
+      <div class="swatch-picker" role="group" aria-label="Pick an accent palette">
+        <span class="swatch-label">Pick a swatch</span>
+        <button class="swatch" style="--c:#c9a24a" data-theme-color="gold" aria-label="Gold palette"></button>
+        <button class="swatch" style="--c:#d97a5f" data-theme-color="coral" aria-label="Coral palette"></button>
+        <button class="swatch" style="--c:#8fb39a" data-theme-color="sage" aria-label="Sage palette"></button>
+        <button class="swatch" style="--c:#c48fce" data-theme-color="orchid" aria-label="Orchid palette"></button>
       </div>
     </div>
+
+    <a class="scroll-cue" href="#about" aria-label="Scroll down">
+      <span class="scroll-cue-line"></span>
+      <span>scroll</span>
+    </a>
   </section>
 
   <!-- ABOUT -->
-  <section id="about">
-    <div class="container">
-      <div class="about-grid">
-        <div class="avatar-wrap">
-          <div class="avatar">S</div>
+  <section id="about" class="scene-section" data-theme="about">
+    <div class="container about-grid">
+      <div class="about-media reveal">
+        <div class="monogram tilt-card">
+          <span>SK</span>
+          <div class="monogram-ring"></div>
         </div>
-        <div class="about-text">
-          <div class="section-label">About Me</div>
-          <h2 class="section-title" style="margin-bottom:1rem">Crafting Code with Purpose</h2>
-          <p>
-            I'm a software developer with a strong foundation in full-stack development, data structures, and problem solving. I enjoy building products that are both technically sound and delightful to use.
-          </p>
-          <p>
-            When I'm not coding, you'll find me reading, exploring new technologies, or mentoring peers.
-          </p>
-          <div class="skills-chips">
-            <span class="chip">Python</span>
-            <span class="chip">JavaScript</span>
-            <span class="chip">React</span>
-            <span class="chip">Node.js</span>
-            <span class="chip">SQL</span>
-            <span class="chip">Git</span>
-            <span class="chip">Machine Learning</span>
-            <span class="chip">REST APIs</span>
-          </div>
+        <ul class="quick-facts">
+          <li><strong>4+ yrs</strong><span>experience</span></li>
+          <li><strong>9</strong><span>brands worked with</span></li>
+          <li><strong>5</strong><span>houses &amp; studios</span></li>
+        </ul>
+      </div>
+      <div class="about-text reveal">
+        <p class="section-label">Professional Summary</p>
+        <h2 class="section-title">Where trend research<br>meets a tech pack.</h2>
+        <p>Creative apparel designer with 4+ years of experience designing Knitwear, Sportswear, Kidswear,
+          Womenswear, and Menswear collections for diverse consumer markets. Proven expertise in end-to-end
+          product development, trend forecasting, concept creation, technical design, tech pack development,
+          fabric &amp; trim sourcing, sample management, fit evaluation, vendor collaboration, and production
+          coordination.</p>
+        <p>Adept at transforming market insights into commercially viable collections while maintaining brand
+          identity, product quality, functionality, and innovation — passionate about creating performance-driven
+          and lifestyle apparel for leading global fashion and sportswear brands.</p>
+        <div class="contact-inline">
+          <a href="tel:+919570186369">+91 95701 86369</a>
+          <a href="mailto:shiwanikumari.here@gmail.com">shiwanikumari.here@gmail.com</a>
+          <a href="https://www.linkedin.com/in/kumarishiwani/" target="_blank" rel="noopener">LinkedIn ↗</a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- PROJECTS -->
-  <section id="projects">
+  <!-- BRANDS -->
+  <section id="brands" class="scene-section" data-theme="brands">
     <div class="container">
-      <div class="section-label">What I've Built</div>
-      <h2 class="section-title">Projects</h2>
-      <div class="projects-grid">
+      <p class="section-label center">Brands Worked With</p>
+      <h2 class="section-title center reveal">Collections that reached real racks.</h2>
+    </div>
+    <div class="marquee-wrap reveal">
+      <div class="marquee">
+        <div class="marquee-track">
+          <span>Puma</span><span>FC</span><span>FCUK</span><span>Myntra</span><span>Marks &amp; Spencer</span>
+          <span>Levi's India</span><span>Walmart</span><span>Milou</span><span>MYTUK</span>
+          <span>Puma</span><span>FC</span><span>FCUK</span><span>Myntra</span><span>Marks &amp; Spencer</span>
+          <span>Levi's India</span><span>Walmart</span><span>Milou</span><span>MYTUK</span>
+        </div>
+      </div>
+      <div class="marquee marquee-rev">
+        <div class="marquee-track">
+          <span>Puma</span><span>FC</span><span>FCUK</span><span>Myntra</span><span>Marks &amp; Spencer</span>
+          <span>Levi's India</span><span>Walmart</span><span>Milou</span><span>MYTUK</span>
+          <span>Puma</span><span>FC</span><span>FCUK</span><span>Myntra</span><span>Marks &amp; Spencer</span>
+          <span>Levi's India</span><span>Walmart</span><span>Milou</span><span>MYTUK</span>
+        </div>
+      </div>
+    </div>
+  </section>
 
-        <div class="card">
-          <div class="card-icon">🛒</div>
-          <h3>E-Commerce Platform</h3>
-          <p>A full-stack shopping app with product catalog, cart management, and secure checkout flow.</p>
-          <div class="card-tags">
-            <span class="tag">React</span>
-            <span class="tag">Node.js</span>
-            <span class="tag">MongoDB</span>
-          </div>
+  <!-- CORE COMPETENCIES -->
+  <section id="competencies" class="scene-section" data-theme="competencies">
+    <div class="container">
+      <p class="section-label">Core Competencies</p>
+      <h2 class="section-title reveal">The craft, stitched together.</h2>
+      <div class="tag-cloud reveal" id="tagCloud">
+        <span>Sportswear Design</span><span>Knitwear Design</span><span>Apparel Product Development</span>
+        <span>Activewear</span><span>Technical Design</span><span>Trend Forecasting</span>
+        <span>Trend Research</span><span>Range Planning</span><span>Collection Development</span>
+        <span>Tech Pack Creation</span><span>Garment Construction</span><span>Fabric &amp; Trim Sourcing</span>
+        <span>Print &amp; Graphic Development</span><span>Sample Development</span><span>Fit Review</span>
+        <span>Vendor Management</span><span>Production Coordination</span><span>Cross-functional Collaboration</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TECHNICAL SKILLS -->
+  <section id="skills" class="scene-section" data-theme="skills">
+    <div class="container">
+      <p class="section-label">Technical Skills</p>
+      <h2 class="section-title reveal">Tools of the trade.</h2>
+      <div class="skills-grid">
+
+        <div class="skill-card tilt-card reveal">
+          <div class="skill-icon">✂️</div>
+          <h3>Design Software</h3>
+          <ul>
+            <li>Adobe Illustrator</li>
+            <li>Adobe Photoshop</li>
+            <li>Adobe InDesign</li>
+            <li>Microsoft Excel</li>
+            <li>Microsoft PowerPoint</li>
+          </ul>
         </div>
 
-        <div class="card">
-          <div class="card-icon">🤖</div>
-          <h3>Sentiment Analyzer</h3>
-          <p>NLP model that classifies user reviews into positive, neutral, or negative sentiment with 92% accuracy.</p>
-          <div class="card-tags">
-            <span class="tag">Python</span>
-            <span class="tag">scikit-learn</span>
-            <span class="tag">Flask</span>
-          </div>
+        <div class="skill-card tilt-card reveal">
+          <div class="skill-icon">📐</div>
+          <h3>Product Development</h3>
+          <ul>
+            <li>Tech Pack Development</li>
+            <li>Technical Flats</li>
+            <li>Product Lifecycle Management</li>
+            <li>Sample Development</li>
+            <li>Fit Analysis</li>
+            <li>Vendor Coordination</li>
+          </ul>
         </div>
 
-        <div class="card">
-          <div class="card-icon">📊</div>
-          <h3>Data Dashboard</h3>
-          <p>Interactive visualization dashboard for real-time analytics with drill-down charts and filters.</p>
-          <div class="card-tags">
-            <span class="tag">React</span>
-            <span class="tag">D3.js</span>
-            <span class="tag">PostgreSQL</span>
-          </div>
+        <div class="skill-card tilt-card reveal">
+          <div class="skill-icon">🎨</div>
+          <h3>Design &amp; Creative</h3>
+          <ul>
+            <li>Fashion Illustration</li>
+            <li>Graphics Development</li>
+            <li>Print Development</li>
+            <li>Trend Forecasting</li>
+            <li>Moodboard Development</li>
+            <li>Colour &amp; Materials Research</li>
+          </ul>
         </div>
 
-        <div class="card">
-          <div class="card-icon">💬</div>
-          <h3>Chat Application</h3>
-          <p>Real-time chat app with WebSocket communication, rooms, and message history persistence.</p>
-          <div class="card-tags">
-            <span class="tag">Socket.io</span>
-            <span class="tag">Express</span>
-            <span class="tag">Redis</span>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-icon">📱</div>
-          <h3>Task Manager</h3>
-          <p>Minimalist productivity app with drag-and-drop task boards, deadlines, and team collaboration.</p>
-          <div class="card-tags">
-            <span class="tag">React</span>
-            <span class="tag">TypeScript</span>
-            <span class="tag">Firebase</span>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-icon">🔐</div>
-          <h3>Auth Service</h3>
-          <p>Secure authentication microservice with JWT, OAuth2, and role-based access control.</p>
-          <div class="card-tags">
-            <span class="tag">Node.js</span>
-            <span class="tag">JWT</span>
-            <span class="tag">PostgreSQL</span>
-          </div>
+        <div class="skill-card tilt-card reveal">
+          <div class="skill-icon">🧶</div>
+          <h3>Technical Expertise</h3>
+          <ul>
+            <li>Knitwear Development</li>
+            <li>Fabric &amp; Trim Sourcing</li>
+            <li>Fabric Knowledge</li>
+            <li>Range Planning</li>
+          </ul>
         </div>
 
       </div>
@@ -525,75 +219,166 @@
   </section>
 
   <!-- EXPERIENCE -->
-  <section id="experience">
+  <section id="experience" class="scene-section" data-theme="experience">
     <div class="container">
-      <div class="section-label">Career</div>
-      <h2 class="section-title">Experience</h2>
+      <p class="section-label">Professional Journey</p>
+      <h2 class="section-title reveal">Five houses, one throughline.</h2>
+
       <div class="timeline">
 
-        <div class="tl-item">
-          <div class="tl-date">2024 — Present</div>
-          <div class="tl-body">
-            <h3>Software Engineer Intern</h3>
-            <div class="company">Tech Company · Full-time</div>
-            <p>Developed and shipped features for a high-traffic SaaS product, improved API response time by 35%, and collaborated in an Agile team of 8.</p>
+        <article class="tl-item reveal">
+          <div class="tl-dot"></div>
+          <div class="tl-card tilt-card">
+            <span class="tl-date">May 2025 — Present*</span>
+            <h3>Designer</h3>
+            <p class="tl-company">MYTUK <span class="tl-brands">In-house brand</span></p>
+            <ul>
+              <li>Lead end-to-end product development for knitwear, sportswear, and lifestyle apparel from concept through production.</li>
+              <li>Research global fashion, sportswear, and consumer trends to develop commercially relevant seasonal collections.</li>
+              <li>Create detailed tech packs and technical specifications, and oversee sample development and fit approvals.</li>
+              <li>Source fabrics, trims, and innovative materials while collaborating with domestic and international vendors.</li>
+              <li>Present seasonal collections and product ranges to buyers, ensuring alignment with brand identity and market requirements.</li>
+              <li>Partner with production teams to maintain product quality, cost efficiency, and on-time delivery.</li>
+            </ul>
           </div>
-        </div>
+        </article>
 
-        <div class="tl-item">
-          <div class="tl-date">2023</div>
-          <div class="tl-body">
-            <h3>Backend Developer Intern</h3>
-            <div class="company">Startup · Remote</div>
-            <p>Built RESTful APIs and database schemas; automated data pipelines that reduced manual effort by 60%.</p>
+        <article class="tl-item reveal">
+          <div class="tl-dot"></div>
+          <div class="tl-card tilt-card">
+            <span class="tl-date">Sep 2024 — Apr 2025</span>
+            <h3>Design &amp; Product Executive</h3>
+            <p class="tl-company">Underlinen Fashion House Pvt. Ltd. <span class="tl-brands">Milou Swish · FC · FCUK · Puma</span></p>
+            <ul>
+              <li>Led end-to-end design and product development of kidswear collections for Milou Swish, from concept to final production.</li>
+              <li>Researched global fashion trends, consumer insights, and competitor products for commercially successful collections.</li>
+              <li>Created seasonal concepts, colour palettes, graphics, and print developments aligned with each brand's identity.</li>
+              <li>Developed detailed tech packs and coordinated sampling, fit reviews, and product development.</li>
+              <li>Collaborated with merchandising, sourcing, production, and marketing teams across the product lifecycle.</li>
+              <li>Supported fabric and trim sourcing while contributing to sustainable product development initiatives.</li>
+            </ul>
           </div>
-        </div>
+        </article>
 
-        <div class="tl-item">
-          <div class="tl-date">2021 — 2025</div>
-          <div class="tl-body">
-            <h3>B.Tech — Computer Science</h3>
-            <div class="company">University</div>
-            <p>Graduated with honours. Led the coding club, won two hackathons, and contributed to open-source projects.</p>
+        <article class="tl-item reveal">
+          <div class="tl-dot"></div>
+          <div class="tl-card tilt-card">
+            <span class="tl-date">Apr 2023 — Sep 2024</span>
+            <h3>Designer</h3>
+            <p class="tl-company">Puffer Fashion Business Services Pvt. Ltd. <span class="tl-brands">FC · FCUK · Myntra</span></p>
+            <ul>
+              <li>Designed innovative kidswear collections focused on comfort, functionality, and commercial appeal.</li>
+              <li>Developed original prints, graphics, and artwork for seasonal collections.</li>
+              <li>Created seasonal mood boards, colour stories, and trend presentations.</li>
+              <li>Selected fabrics and trims based on quality, functionality, and commercial requirements.</li>
+              <li>Collaborated with product development and production teams for seamless execution to finished garments.</li>
+            </ul>
           </div>
-        </div>
+        </article>
+
+        <article class="tl-item reveal">
+          <div class="tl-dot"></div>
+          <div class="tl-card tilt-card">
+            <span class="tl-date">Jan 2023 — Apr 2023</span>
+            <h3>Design Intern</h3>
+            <p class="tl-company">Arvind Fashions Ltd. <span class="tl-brands">Marks &amp; Spencer · Levi's India</span></p>
+            <ul>
+              <li>Conducted trend forecasting and consumer research to support seasonal collection development.</li>
+              <li>Created technical sketches, garment specifications, and tech packs for sampling.</li>
+              <li>Designed prints and graphics for commercial apparel collections.</li>
+              <li>Collaborated with design teams to translate global trends into market-ready products.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="tl-item reveal">
+          <div class="tl-dot"></div>
+          <div class="tl-card tilt-card">
+            <span class="tl-date">Jun 2022 — Jul 2022</span>
+            <h3>Design Intern</h3>
+            <p class="tl-company">Jay Jay Mills <span class="tl-brands">Walmart</span></p>
+            <ul>
+              <li>Conducted customer and market research for kidswear product development.</li>
+              <li>Assisted in garment design, print development, sampling, and technical development.</li>
+              <li>Worked on knit structures, fabric notation, and knitwear development processes.</li>
+              <li>Developed a kidswear collection applying trend research, garment construction, and fabric knowledge.</li>
+            </ul>
+          </div>
+        </article>
 
       </div>
+      <p class="tl-note">*Most recent role details inferred from résumé sequence — please confirm exact title &amp; start date.</p>
     </div>
   </section>
 
   <!-- CONTACT -->
-  <section id="contact">
-    <div class="container">
-      <div class="section-label">Say Hello</div>
-      <h2 class="section-title">Get in Touch</h2>
-      <div class="contact-card">
-        <p>
-          I'm always open to new opportunities, collaborations, or just a good conversation about technology. Drop me a message!
-        </p>
-        <a href="mailto:shiwani@example.com" class="btn btn-primary">shiwani@example.com</a>
+  <section id="contact" class="scene-section" data-theme="contact">
+    <div class="container center">
+      <p class="section-label center">Let's Talk</p>
+      <h2 class="section-title center reveal">Have a collection<br>that needs a designer?</h2>
+      <p class="contact-sub reveal">Open to full-time roles, freelance capsules, and collaborations across
+        knitwear, sportswear, and activewear.</p>
+
+      <div class="contact-card reveal">
+        <a href="mailto:shiwanikumari.here@gmail.com" class="btn btn-primary magnetic" id="emailBtn">
+          <span>shiwanikumari.here@gmail.com</span>
+        </a>
         <div class="social-links">
-          <a href="#" class="social-link">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.48 1 .11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02.005 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.49 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.21.7.83.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
-            GitHub
+          <a class="social-link magnetic" href="tel:+919570186369">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.2.5 2.5.8 3.9.8.6 0 1 .4 1 1V21c0 .6-.4 1-1 1C10.6 22 2 13.4 2 3c0-.6.4-1 1-1h3.9c.6 0 1 .4 1 1 0 1.4.3 2.7.8 3.9.1.4 0 .8-.2 1L6.6 10.8z"/></svg>
+            +91 95701 86369
           </a>
-          <a href="#" class="social-link">
+          <a class="social-link magnetic" href="https://www.linkedin.com/in/kumarishiwani/" target="_blank" rel="noopener">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.37V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.26 2.37 4.26 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.23 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.46C23.21 24 24 23.23 24 22.28V1.72C24 .77 23.21 0 22.23 0z"/></svg>
             LinkedIn
-          </a>
-          <a href="#" class="social-link">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.95 4.57a10 10 0 0 1-2.82.77 4.96 4.96 0 0 0 2.16-2.72c-.95.56-2 .96-3.12 1.19a4.92 4.92 0 0 0-8.38 4.49A13.96 13.96 0 0 1 1.64 3.16a4.92 4.92 0 0 0 1.52 6.57 4.9 4.9 0 0 1-2.23-.61v.06a4.92 4.92 0 0 0 3.95 4.83 4.94 4.94 0 0 1-2.22.08 4.93 4.93 0 0 0 4.6 3.42A9.87 9.87 0 0 1 0 19.54a13.94 13.94 0 0 0 7.55 2.21c9.06 0 14.01-7.5 14.01-14.01 0-.21 0-.42-.02-.63A10 10 0 0 0 24 4.59l-.05-.02z"/></svg>
-            Twitter
           </a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- FOOTER -->
-  <footer>
-    <p>Designed &amp; built by Shiwani Kumari &mdash; 2025</p>
-  </footer>
+</main>
 
+<footer>
+  <p>Designed &amp; woven by Shiwani Kumari &middot; <span id="year"></span></p>
+</footer>
+
+<!-- printable resume (screen-hidden, print-only) -->
+<div id="printSheet" aria-hidden="true">
+  <h1>Shiwani Kumari</h1>
+  <p>Sportswear &amp; Knitwear Designer | Apparel Product Development | Activewear | Technical Design</p>
+  <p>+91 9570186369 · shiwanikumari.here@gmail.com · linkedin.com/in/kumarishiwani</p>
+  <h2>Professional Summary</h2>
+  <p>Creative Apparel Designer with 4+ years of experience designing Knitwear, Sportswear, Kidswear, Womenswear,
+    and Menswear collections for diverse consumer markets. Proven expertise in end-to-end product development,
+    trend forecasting, concept creation, technical design, tech pack development, fabric and trim sourcing,
+    sample management, fit evaluation, vendor collaboration, and production coordination.</p>
+  <h2>Brands Worked With</h2>
+  <p>Puma · FC · FCUK · Myntra · Marks &amp; Spencer · Levi's India · Walmart · Milou · MYTUK</p>
+  <h2>Core Competencies</h2>
+  <p>Sportswear Design, Knitwear Design, Apparel Product Development, Activewear, Technical Design, Trend
+    Forecasting, Trend Research, Range Planning, Collection Development, Tech Pack Creation, Garment
+    Construction, Fabric &amp; Trim Sourcing, Print &amp; Graphic Development, Sample Development, Fit Review,
+    Vendor Management, Production Coordination, Cross-functional Collaboration.</p>
+  <h2>Technical Skills</h2>
+  <p><strong>Design Software:</strong> Adobe Illustrator, Photoshop, InDesign, MS Excel, MS PowerPoint<br>
+     <strong>Product Development:</strong> Tech Pack Development, Technical Flats, PLM, Sample Development, Fit Analysis, Vendor Coordination<br>
+     <strong>Design &amp; Creative:</strong> Fashion Illustration, Graphics Development, Print Development, Trend Forecasting, Moodboard Development, Colour &amp; Materials Research<br>
+     <strong>Technical Expertise:</strong> Knitwear Development, Fabric &amp; Trim Sourcing, Fabric Knowledge, Range Planning</p>
+  <h2>Professional Experience</h2>
+  <p><strong>Designer — MYTUK</strong> (May 2025 – Present*)<br>
+     Lead end-to-end product development for knitwear, sportswear, and lifestyle apparel from concept through production.</p>
+  <p><strong>Design &amp; Product Executive — Underlinen Fashion House Pvt. Ltd.</strong> (Sep 2024 – Apr 2025)<br>
+     Key Brands: Milou Swish, FC, FCUK, Puma. Led kidswear design and product development end-to-end.</p>
+  <p><strong>Designer — Puffer Fashion Business Services Pvt. Ltd.</strong> (Apr 2023 – Sep 2024)<br>
+     Key Brands: FC, FCUK, Myntra. Designed kidswear collections; developed prints, graphics, and mood boards.</p>
+  <p><strong>Design Intern — Arvind Fashions Ltd.</strong> (Jan 2023 – Apr 2023)<br>
+     Key Brands: Marks &amp; Spencer, Levi's India. Trend forecasting, tech packs, prints and graphics.</p>
+  <p><strong>Design Intern — Jay Jay Mills</strong> (Jun 2022 – Jul 2022)<br>
+     Key Brand: Walmart. Kidswear research, knit structures, sampling and technical development.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="assets/script.js"></script>
 </body>
 </html>
