@@ -356,19 +356,6 @@ h1 .ink { color: var(--accent); font-style: italic; }
 /* ============ FOOTER ============ */
 footer { text-align: center; padding: 2.4rem; font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--panel-border); }
 
-/* ============ PRINT SHEET ============ */
-#printSheet { display: none; }
-@media print {
-  body * { visibility: hidden; }
-  #printSheet, #printSheet * { visibility: visible; }
-  #printSheet {
-    display: block; position: absolute; top: 0; left: 0; width: 100%; padding: 1cm; color: #111; background: #fff;
-  }
-  #printSheet h1 { font-family: serif; font-size: 22pt; margin-bottom: 4pt; }
-  #printSheet h2 { font-family: sans-serif; font-size: 12pt; margin: 14pt 0 4pt; border-bottom: 1px solid #999; }
-  #printSheet p { font-size: 10.5pt; margin-bottom: 6pt; line-height: 1.5; }
-}
-
 /* ============ RESPONSIVE ============ */
 @media (max-width: 640px) {
   .scene-section { padding: 5.5rem 0; }

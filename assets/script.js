@@ -109,7 +109,7 @@
   /* ---------------- SWATCH PALETTE PICKER ---------------- */
   const swatches = document.querySelectorAll('.swatch');
   let currentSwatchName = 'gold';
-  let onSwatchChange = () => {}; // wired up later, once the 3D dress material exists
+  let onSwatchChange = () => {}; // wired up later, once the 3D ribbon material exists
   function applySwatch(name) {
     if (name) document.documentElement.setAttribute('data-swatch', name);
     else document.documentElement.removeAttribute('data-swatch');
@@ -123,10 +123,6 @@
     const saved = localStorage.getItem('sk-swatch');
     if (saved) applySwatch(saved);
   } catch (e) {}
-
-  /* ---------------- PRINT RESUME ---------------- */
-  const printBtn = document.getElementById('printResume');
-  if (printBtn) printBtn.addEventListener('click', () => window.print());
 
   /* ---------------- CONFETTI ---------------- */
   const confettiColors = ['#c9a24a', '#d97a5f', '#8fb39a', '#c48fce', '#f3ecdf'];
@@ -194,149 +190,123 @@
   scene.add(light2);
 
   /* ===============================================================
-     MANNEQUIN — a wireframe dress-form cage, centred in view, that
-     fills in with a solid, beautiful dress from the neckline down as
-     you scroll — by the bottom of the page it reads as fully dressed.
-     The dress colour follows the swatch picker.
+     RIBBON — a length of satin unspooling gracefully through space,
+     centred in view. As you scroll it draws further out from the
+     spool in a loose flowing flourish, catching the light like real
+     fabric; the ribbon's colour follows the swatch picker. Built from
+     a hand-rolled ribbon strip (not an attempt at a realistic body),
+     which is what keeps it reliably beautiful at every angle.
      =============================================================== */
-  const DRESS_SCALE = isTouch ? 0.88 : 1.38;
-  const dressAnchor = new THREE.Group();
-  const dressSpin = new THREE.Group();
-  dressAnchor.add(dressSpin);
+  const RIBBON_SCALE = isTouch ? 0.9 : 1.5;
+  const ribbonAnchor = new THREE.Group();
+  const ribbonSpin = new THREE.Group();
+  ribbonAnchor.add(ribbonSpin);
 
-  // Silhouette profile (radius, height) revolved around the Y axis — a
-  // realistic feminine hourglass: neck -> shoulder -> bust -> waist ->
-  // hip -> thigh, with rounded (not pointed) neck and base caps. A small
-  // set of control points is passed through a spline and densely
-  // resampled so the curve reads as an organic body line, not a faceted
-  // polyline (which was looking more like a ceramic vase than a torso).
-  const bodyControlPts = [
-    [0.34, 4.2], [0.37, 3.95], [0.62, 3.7], [0.80, 3.5], [0.84, 3.15],
-    [1.08, 2.6], [0.90, 2.15], [0.80, 1.7], [0.68, 1.1], [0.78, 0.5],
-    [0.98, -0.1], [1.16, -0.8], [1.10, -1.4], [0.92, -2.0], [0.68, -2.6],
-    [0.38, -3.1], [0.16, -3.4], [0.02, -3.6],
-  ].map(([x, y]) => new THREE.Vector2(x, y));
-  const bodySpline = new THREE.SplineCurve(bodyControlPts);
-  const profile = bodySpline.getPoints(100);
-  const profilePts = profile.map((v) => [v.x, v.y]);
-  const BODY_TOP = profilePts[0][1], BODY_BOTTOM = profilePts[profilePts.length - 1][1];
+  // A loose, elegant flourish through 3D space — the ribbon's path.
+  const ribbonWaypoints = [
+    [0, 3.3, 0], [1.7, 2.1, 1.3], [2.6, 0.3, -0.7], [1.1, -1.3, 1.5],
+    [-1.4, -2.1, -1.0], [-2.7, -0.1, 1.3], [-1.1, 1.9, -0.7], [0.6, 3.1, 0.9],
+    [2.3, 1.3, -1.4], [2.0, -1.7, 0.5], [0.1, -3.3, -1.0],
+  ].map(([x, y, z]) => new THREE.Vector3(x, y, z));
+  const ribbonCurve = new THREE.CatmullRomCurve3(ribbonWaypoints);
 
-  // Linear-interpolated body radius at an arbitrary height, so both the
-  // wireframe cage and the dress fill hug the silhouette's true curve.
-  function bodyRadiusAt(y) {
-    for (let i = 0; i < profilePts.length - 1; i++) {
-      const [xa, ya] = profilePts[i];
-      const [xb, yb] = profilePts[i + 1];
-      if (y <= ya && y >= yb) {
-        const t = (ya - y) / (ya - yb || 1e-6);
-        return xa + (xb - xa) * t;
-      }
+  const RIBBON_SEGMENTS = 220, RIBBON_WIDTH = 0.95;
+  function buildRibbonGeometry() {
+    const pts = ribbonCurve.getPoints(RIBBON_SEGMENTS);
+    const worldUp = new THREE.Vector3(0, 1, 0);
+    const positions = [], uvs = [];
+    for (let i = 0; i <= RIBBON_SEGMENTS; i++) {
+      const p = pts[i];
+      const tangent = ribbonCurve.getTangentAt(i / RIBBON_SEGMENTS).normalize();
+      let right = new THREE.Vector3().crossVectors(tangent, worldUp);
+      if (right.lengthSq() < 1e-5) right.set(1, 0, 0);
+      right.normalize().multiplyScalar(RIBBON_WIDTH / 2);
+      positions.push(p.x - right.x, p.y - right.y, p.z - right.z, p.x + right.x, p.y + right.y, p.z + right.z);
+      const v = i / RIBBON_SEGMENTS;
+      uvs.push(0, v, 1, v);
     }
-    return profilePts[profilePts.length - 1][0];
-  }
-
-  // Wireframe "blueprint" cage: latitude rings + longitude meridians,
-  // like a tailor's croquis — clean grid lines, not a dense triangle mesh.
-  const wireGroup = new THREE.Group();
-  const wireMat = new THREE.LineBasicMaterial({ color: 0xe4d9bd, transparent: true, opacity: 0.5 });
-  const LAT_COUNT = 26, LAT_SEG = 56, LON_COUNT = 20;
-  for (let i = 0; i < LAT_COUNT; i++) {
-    const y = BODY_TOP - (i / (LAT_COUNT - 1)) * (BODY_TOP - BODY_BOTTOM);
-    const r = bodyRadiusAt(y);
-    const pts = [];
-    for (let j = 0; j <= LAT_SEG; j++) {
-      const a = (j / LAT_SEG) * Math.PI * 2;
-      pts.push(new THREE.Vector3(Math.cos(a) * r, y, Math.sin(a) * r));
+    const indices = [];
+    for (let i = 0; i < RIBBON_SEGMENTS; i++) {
+      const a = i * 2, b = i * 2 + 1, c = (i + 1) * 2, d = (i + 1) * 2 + 1;
+      indices.push(a, c, b, b, c, d);
     }
-    wireGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), wireMat));
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    geo.setIndex(indices);
+    geo.computeVertexNormals();
+    return geo;
   }
-  for (let i = 0; i < LON_COUNT; i++) {
-    const a = (i / LON_COUNT) * Math.PI * 2;
-    const pts = profilePts.map(([x, y]) => new THREE.Vector3(Math.cos(a) * x, y, Math.sin(a) * x));
-    wireGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), wireMat));
-  }
-  dressSpin.add(wireGroup);
-
-  // Stand: a slim rod and a round foot, like a real dress form.
-  const standMat = new THREE.MeshStandardMaterial({ color: 0x241c12, roughness: 0.45, metalness: 0.6 });
-  const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 1.6, 12), standMat);
-  rod.position.y = BODY_BOTTOM - 0.8;
-  dressSpin.add(rod);
-  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.95, 0.14, 28), standMat);
-  foot.position.y = rod.position.y - 0.87;
-  dressSpin.add(foot);
-
-  // The dress itself: a solid, smoothly-shaded surface sitting just
-  // outside the wireframe, revealed by a horizontal clip plane that
-  // sweeps downward as you scroll — so it looks like it's filling in.
-  const fillPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-  const dressMat = new THREE.MeshStandardMaterial({
-    color: 0xc9a24a, roughness: 0.38, metalness: 0.2, side: THREE.FrontSide,
-    transparent: true, opacity: 0.82,
-    clippingPlanes: [fillPlane],
+  const ribbonGeo = buildRibbonGeometry();
+  const ribbonMat = new THREE.MeshStandardMaterial({
+    color: 0xc9a24a, roughness: 0.32, metalness: 0.22, side: THREE.DoubleSide,
+    transparent: true, opacity: 0.9,
   });
-  const DRESS_TOP = 3.3, DRESS_BOTTOM = -2.6;
-  const dressGeo = new THREE.LatheGeometry(profile, 56);
-  dressGeo.scale(1.025, 1.025, 1.025);
-  const dressMesh = new THREE.Mesh(dressGeo, dressMat);
-  dressSpin.add(dressMesh);
+  const ribbonMesh = new THREE.Mesh(ribbonGeo, ribbonMat);
+  ribbonMesh.userData.indicesPerSeg = 6;
+  ribbonMesh.userData.totalSegments = RIBBON_SEGMENTS;
+  ribbonGeo.setDrawRange(0, 6);
+  ribbonSpin.add(ribbonMesh);
 
-  // A fine trim line that travels with the fill edge — the "leading
-  // thread" of the hem currently being finished.
-  const trimMat = new THREE.MeshStandardMaterial({ color: 0xfff3d6, roughness: 0.3, metalness: 0.5 });
-  const trim = new THREE.Mesh(new THREE.TorusGeometry(1, 0.045, 10, 48), trimMat);
-  trim.rotation.x = Math.PI / 2;
-  dressSpin.add(trim);
+  // The spool it unwinds from — a clean, simple, reliably good-looking
+  // object (a cylinder body with a few wound rings), anchoring the
+  // ribbon's story without attempting anything anatomical.
+  const spoolGroup = new THREE.Group();
+  const spoolMat = new THREE.MeshStandardMaterial({ color: 0x2c2115, roughness: 0.85, metalness: 0.08 });
+  const spoolBody = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 1.3, 24, 1, true), spoolMat);
+  spoolBody.rotation.z = Math.PI / 2;
+  spoolGroup.add(spoolBody);
+  const ringMat = new THREE.MeshStandardMaterial({ color: 0xc9a24a, roughness: 0.4, metalness: 0.35 });
+  for (let i = -1; i <= 1; i++) {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.64, 0.05, 10, 32), ringMat);
+    ring.rotation.y = Math.PI / 2;
+    ring.position.x = i * 0.42;
+    spoolGroup.add(ring);
+  }
+  spoolGroup.position.copy(ribbonWaypoints[0]).add(new THREE.Vector3(0, 0.15, 0));
+  ribbonSpin.add(spoolGroup);
 
-  const dressLight = new THREE.PointLight(0xffe9c2, 1.5, 30);
-  dressLight.position.set(3, 4, 7);
-  dressAnchor.add(dressLight);
-  const dressRim = new THREE.PointLight(0xc9a24a, 0.9, 24);
-  dressRim.position.set(-5, -1, -3);
-  dressAnchor.add(dressRim);
-  const dressFill = new THREE.PointLight(0xfff3e0, 0.6, 24);
-  dressFill.position.set(0, -2, 8);
-  dressAnchor.add(dressFill);
+  const ribbonLight = new THREE.PointLight(0xffe9c2, 1.5, 32);
+  ribbonLight.position.set(3, 4, 7);
+  ribbonAnchor.add(ribbonLight);
+  const ribbonRim = new THREE.PointLight(0xc9a24a, 0.9, 26);
+  ribbonRim.position.set(-5, -2, -3);
+  ribbonAnchor.add(ribbonRim);
+  const ribbonFill = new THREE.PointLight(0xfff3e0, 0.55, 24);
+  ribbonFill.position.set(0, -3, 8);
+  ribbonAnchor.add(ribbonFill);
 
-  dressSpin.scale.setScalar(DRESS_SCALE);
-  scene.add(dressAnchor);
+  ribbonSpin.scale.setScalar(RIBBON_SCALE);
+  scene.add(ribbonAnchor);
 
-  // Wire the swatch picker to the garment colour now that dressMat exists.
+  // Wire the swatch picker to the ribbon's colour.
   const swatchColorMap = { gold: 0xc9a24a, coral: 0xd97a5f, sage: 0x8fb39a, orchid: 0xc48fce };
   onSwatchChange = (name) => {
     const hex = swatchColorMap[name] || swatchColorMap.gold;
-    dressMat.color.setHex(hex);
-    trimMat.color.setHex(hex).lerp(new THREE.Color(0xffffff), 0.35);
+    ribbonMat.color.setHex(hex);
+    ringMat.color.setHex(hex);
   };
   onSwatchChange(currentSwatchName);
 
-  const fillPoint = new THREE.Vector3();
-  const upVec = new THREE.Vector3(0, 1, 0);
-  function updateDressReveal() {
-    const threshold = DRESS_TOP - scrollFrac * (DRESS_TOP - DRESS_BOTTOM);
-    const worldY = dressAnchor.position.y + threshold * DRESS_SCALE;
-    fillPoint.set(dressAnchor.position.x, worldY, dressAnchor.position.z);
-    fillPlane.setFromNormalAndCoplanarPoint(upVec, fillPoint);
-    trim.position.set(dressAnchor.position.x, worldY, dressAnchor.position.z);
-    const r = bodyRadiusAt(threshold) * 1.03 * DRESS_SCALE;
-    trim.scale.set(r, r, 1);
-    trim.visible = scrollFrac > 0.01 && scrollFrac < 0.999;
+  function updateRibbonReveal() {
+    const revealSegs = Math.max(1, Math.round(scrollFrac * RIBBON_SEGMENTS));
+    ribbonGeo.setDrawRange(0, revealSegs * ribbonMesh.userData.indicesPerSeg);
   }
 
-  const dressDesiredPos = new THREE.Vector3();
-  const dressForward = new THREE.Vector3();
-  const dressUp = new THREE.Vector3();
+  const ribbonDesiredPos = new THREE.Vector3();
+  const ribbonForward = new THREE.Vector3();
+  const ribbonUp = new THREE.Vector3();
   function updateHeroObject() {
     // Centred directly in front of the camera at all times.
-    dressForward.set(0, 0, -1).applyQuaternion(camera.quaternion);
-    dressUp.set(0, 1, 0).applyQuaternion(camera.quaternion);
-    dressDesiredPos.copy(camera.position)
-      .addScaledVector(dressForward, 21)
-      .addScaledVector(dressUp, -0.3);
-    if (reducedMotion) dressAnchor.position.copy(dressDesiredPos);
-    else dressAnchor.position.lerp(dressDesiredPos, 0.12);
+    ribbonForward.set(0, 0, -1).applyQuaternion(camera.quaternion);
+    ribbonUp.set(0, 1, 0).applyQuaternion(camera.quaternion);
+    ribbonDesiredPos.copy(camera.position)
+      .addScaledVector(ribbonForward, 20)
+      .addScaledVector(ribbonUp, -0.2);
+    if (reducedMotion) ribbonAnchor.position.copy(ribbonDesiredPos);
+    else ribbonAnchor.position.lerp(ribbonDesiredPos, 0.12);
 
-    updateDressReveal();
+    updateRibbonReveal();
   }
 
   /* sparse starfield — faint ambient depth, not a debris field */
@@ -416,7 +386,8 @@
     updateCamera();
     lerpLightToTheme();
 
-    dressSpin.rotation.y += 0.0032;
+    ribbonSpin.rotation.y += 0.0032;
+    ribbonSpin.rotation.x = Math.sin(time * 0.00018) * 0.12;
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
