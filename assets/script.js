@@ -108,11 +108,15 @@
 
   /* ---------------- SWATCH PALETTE PICKER ---------------- */
   const swatches = document.querySelectorAll('.swatch');
+  let currentSwatchName = 'gold';
+  let onSwatchChange = () => {}; // wired up later, once the 3D dress material exists
   function applySwatch(name) {
     if (name) document.documentElement.setAttribute('data-swatch', name);
     else document.documentElement.removeAttribute('data-swatch');
     swatches.forEach(s => s.classList.toggle('active', s.dataset.themeColor === name));
     try { localStorage.setItem('sk-swatch', name || ''); } catch (e) {}
+    currentSwatchName = name || 'gold';
+    onSwatchChange(currentSwatchName);
   }
   swatches.forEach(s => s.addEventListener('click', () => applySwatch(s.dataset.themeColor)));
   try {
@@ -189,13 +193,11 @@
   scene.add(light2);
 
   /* ===============================================================
-     DRESS FORM — a clean, single, realistic apparel-design centerpiece.
-     A tailor's mannequin torso (lathe-revolved silhouette) on a stand,
-     wrapped in a fine gold technical pattern-grid with pinned "pattern
-     dots", plus a slim tape-measure sash at the waist. One well-lit,
-     ordered object reads as "designer's studio" — not a debris field.
-     Always anchored a fixed distance in front of the camera so it's
-     never scrolled out of view.
+     MANNEQUIN — a realistic tailor's dress form on a stand, always
+     anchored a fixed distance in front of the camera. As you scroll,
+     one knit row of thread at a time wraps around it from the bust
+     down to the hem — by the bottom of the page it's fully dressed
+     in a finished garment. The dress colour follows the swatch picker.
      =============================================================== */
   const DRESS_SCALE = isTouch ? 0.36 : 0.62;
   const dressAnchor = new THREE.Group();
@@ -204,34 +206,33 @@
 
   // Silhouette profile (radius, height) revolved around the Y axis —
   // neck -> shoulder/bust swell -> waist -> hip -> tapered base.
-  const profile = [
+  const profilePts = [
     [0.42, 4.0], [0.55, 3.5], [0.95, 3.0], [1.15, 2.3], [0.98, 1.4],
     [0.78, 0.6], [0.80, 0.0], [1.05, -0.8], [1.12, -1.6], [0.95, -2.4],
     [0.55, -3.0], [0.05, -3.3],
-  ].map(([x, y]) => new THREE.Vector2(x, y));
+  ];
+  const profile = profilePts.map(([x, y]) => new THREE.Vector2(x, y));
 
-  const torsoGeo = new THREE.LatheGeometry(profile, 40);
+  // Linear-interpolated body radius at an arbitrary height, so the
+  // dress rows can hug the silhouette's curve at every point.
+  function bodyRadiusAt(y) {
+    for (let i = 0; i < profilePts.length - 1; i++) {
+      const [xa, ya] = profilePts[i];
+      const [xb, yb] = profilePts[i + 1];
+      if (y <= ya && y >= yb) {
+        const t = (ya - y) / (ya - yb || 1e-6);
+        return xa + (xb - xa) * t;
+      }
+    }
+    return profilePts[profilePts.length - 1][0];
+  }
+
+  const torsoGeo = new THREE.LatheGeometry(profile, 64);
   const torso = new THREE.Mesh(
     torsoGeo,
-    new THREE.MeshStandardMaterial({ color: 0xe9ddc6, roughness: 0.62, metalness: 0.04, side: THREE.DoubleSide })
+    new THREE.MeshStandardMaterial({ color: 0xe6d9bd, roughness: 0.68, metalness: 0.02, side: THREE.DoubleSide })
   );
   dressSpin.add(torso);
-
-  // Fine technical pattern-grid, sitting just outside the torso surface.
-  const gridGeo = new THREE.LatheGeometry(profile, 40);
-  gridGeo.scale(1.015, 1.015, 1.015);
-  const grid = new THREE.Mesh(
-    gridGeo,
-    new THREE.MeshBasicMaterial({ color: 0xc9a24a, wireframe: true, transparent: true, opacity: 0.4 })
-  );
-  dressSpin.add(grid);
-
-  // Pinned "pattern dots" at the grid's vertices, glowing softly.
-  const pins = new THREE.Points(
-    gridGeo,
-    new THREE.PointsMaterial({ color: 0xffe9c2, size: 0.07, sizeAttenuation: true, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false })
-  );
-  dressSpin.add(pins);
 
   // Stand: a slim rod and a round foot, like a real dress form.
   const standMat = new THREE.MeshStandardMaterial({ color: 0x241c12, roughness: 0.45, metalness: 0.6 });
@@ -242,14 +243,38 @@
   foot.position.y = -4.95;
   dressSpin.add(foot);
 
-  // Tape-measure sash at the waist.
-  const sash = new THREE.Mesh(
-    new THREE.TorusGeometry(0.86, 0.045, 10, 48),
-    new THREE.MeshStandardMaterial({ color: 0xc2601f, roughness: 0.35, metalness: 0.5 })
+  // One shared material for the whole garment, so the swatch picker
+  // can recolour it instantly (see onSwatchChange wiring below).
+  const dressMat = new THREE.MeshStandardMaterial({ color: 0xc9a24a, roughness: 0.5, metalness: 0.18 });
+
+  // Fixed neckline trim — the garment's top edge, always in place.
+  const DRESS_TOP = 2.85, DRESS_BOTTOM = -2.55;
+  const necklineTrim = new THREE.Mesh(
+    new THREE.TorusGeometry(bodyRadiusAt(DRESS_TOP) * 1.05, 0.05, 10, 48),
+    dressMat
   );
-  sash.rotation.x = Math.PI / 2;
-  sash.position.y = 0.6;
-  dressSpin.add(sash);
+  necklineTrim.rotation.x = Math.PI / 2;
+  necklineTrim.position.y = DRESS_TOP;
+  dressSpin.add(necklineTrim);
+
+  // The garment itself: many close-set knit rows, hugging the body's
+  // curve, each one revealed (and gently "cinched" into place) as the
+  // scroll position reaches it — see updateDressReveal().
+  const DRESS_ROWS = 64;
+  const dressRings = [];
+  for (let i = 0; i < DRESS_ROWS; i++) {
+    const t = i / (DRESS_ROWS - 1);
+    const y = DRESS_TOP - t * (DRESS_TOP - DRESS_BOTTOM);
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(bodyRadiusAt(y) * 1.045, 0.062, 8, 40),
+      dressMat
+    );
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = y;
+    ring.visible = false;
+    dressSpin.add(ring);
+    dressRings.push(ring);
+  }
 
   const dressLight = new THREE.PointLight(0xffe9c2, 1.4, 26);
   dressLight.position.set(3, 3, 6);
@@ -257,9 +282,27 @@
   const dressRim = new THREE.PointLight(0xc9a24a, 0.8, 20);
   dressRim.position.set(-4, -1, -3);
   dressAnchor.add(dressRim);
+  const dressFill = new THREE.PointLight(0xfff3e0, 0.55, 22);
+  dressFill.position.set(0, -2, 7);
+  dressAnchor.add(dressFill);
 
   dressSpin.scale.setScalar(DRESS_SCALE);
   scene.add(dressAnchor);
+
+  // Wire the swatch picker to the garment colour now that dressMat exists.
+  const swatchColorMap = { gold: 0xc9a24a, coral: 0xd97a5f, sage: 0x8fb39a, orchid: 0xc48fce };
+  onSwatchChange = (name) => { dressMat.color.setHex(swatchColorMap[name] || swatchColorMap.gold); };
+  onSwatchChange(currentSwatchName);
+
+  function updateDressReveal() {
+    const activeF = scrollFrac * DRESS_ROWS;
+    for (let i = 0; i < DRESS_ROWS; i++) {
+      const p = Math.min(1, Math.max(0, activeF - i));
+      const ring = dressRings[i];
+      ring.visible = p > 0.001;
+      if (ring.visible) ring.scale.setScalar(0.05 + (p * p * (3 - 2 * p)) * 0.95);
+    }
+  }
 
   const dressDesiredPos = new THREE.Vector3();
   const dressForward = new THREE.Vector3();
@@ -282,6 +325,8 @@
       .addScaledVector(dressUp, portrait ? -3.4 : -0.4);
     if (reducedMotion) dressAnchor.position.copy(dressDesiredPos);
     else dressAnchor.position.lerp(dressDesiredPos, 0.12);
+
+    updateDressReveal();
   }
 
   /* sparse starfield — faint ambient depth, not a debris field */
