@@ -1,1 +1,1 @@
-Access My Portfoli: https://kumari-shiwani.github.io/
+Access My Portfolio: https://kumari-shiwani.github.io/
