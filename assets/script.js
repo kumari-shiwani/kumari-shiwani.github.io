@@ -188,24 +188,106 @@
   light2.position.set(-18, -8, -20);
   scene.add(light2);
 
-  /* central spool — a recurring focal motif */
-  const spoolGroup = new THREE.Group();
-  const spoolBody = new THREE.Mesh(
-    new THREE.CylinderGeometry(2.1, 2.1, 4.4, 28, 1, true),
-    new THREE.MeshStandardMaterial({ color: 0x241c12, roughness: 0.75, metalness: 0.15, side: THREE.DoubleSide })
+  /* ===============================================================
+     WOOL YARN BALL — the signature apparel motif.
+     Always anchored a fixed distance in front of the camera (so it's
+     never scrolled out of view), with a single gold thread that
+     visibly unrolls off it as you scroll down and rolls back on as
+     you scroll up (via a growing/shrinking TubeGeometry drawRange).
+     =============================================================== */
+  const YARN_R = isTouch ? 1.15 : 2.3;
+  const yarnAnchor = new THREE.Group();
+  const ballSpin = new THREE.Group();
+  yarnAnchor.add(ballSpin);
+
+  const yarnCore = new THREE.Mesh(
+    new THREE.SphereGeometry(YARN_R * 0.82, 28, 28),
+    new THREE.MeshStandardMaterial({ color: 0x2c2115, roughness: 1 })
   );
-  spoolGroup.add(spoolBody);
-  for (let i = -1; i <= 1; i++) {
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(2.15, 0.16, 10, 40),
-      new THREE.MeshStandardMaterial({ color: THEME_COLORS.hero, roughness: 0.4, metalness: 0.5 })
+  ballSpin.add(yarnCore);
+
+  const woolColors = [0xf2e8d6, 0xe9d7ac, 0xf8f1e2, 0xd8b978, 0xede0c8, 0xf1e0c0];
+  const STRAND_COUNT = 52;
+  for (let i = 0; i < STRAND_COUNT; i++) {
+    const q = new THREE.Quaternion().setFromEuler(
+      new THREE.Euler(Math.random() * Math.PI * 2, Math.random() * Math.PI * 2, Math.random() * Math.PI * 2)
     );
-    ring.rotation.x = Math.PI / 2;
-    ring.position.y = i * 1.5;
-    spoolGroup.add(ring);
+    const rad = YARN_R * (0.9 + Math.random() * 0.14);
+    const pts = [];
+    const n = 22;
+    for (let j = 0; j < n; j++) {
+      const t = (j / n) * Math.PI * 2;
+      const v = new THREE.Vector3(Math.cos(t) * rad, Math.sin(t) * rad, (Math.random() - 0.5) * 0.5);
+      v.applyQuaternion(q);
+      pts.push(v);
+    }
+    const curve = new THREE.CatmullRomCurve3(pts, true);
+    const geo = new THREE.TubeGeometry(curve, 50, 0.085 + Math.random() * 0.05, 6, true);
+    const mat = new THREE.MeshStandardMaterial({
+      color: woolColors[i % woolColors.length], roughness: 0.92, metalness: 0.02,
+    });
+    ballSpin.add(new THREE.Mesh(geo, mat));
   }
-  spoolGroup.position.set(6, 2, -18);
-  scene.add(spoolGroup);
+
+  const yarnLight = new THREE.PointLight(0xffe9c2, 1.3, 24);
+  yarnLight.position.set(2, 2, 5);
+  yarnAnchor.add(yarnLight);
+
+  /* the unrolling thread — one long tube, revealed progressively via drawRange.
+     Spirals outward from the ball's surface in a widening loop (rather than
+     receding straight into depth, which perspective would foreshorten into
+     nothing) so its growth reads clearly on screen as it "unrolls". */
+  const threadPts = [];
+  const THREAD_WAYPOINTS = 46;
+  const SPIRAL_TURNS = 2.6;
+  for (let i = 0; i <= THREAD_WAYPOINTS; i++) {
+    const t = i / THREAD_WAYPOINTS;
+    const angle = t * SPIRAL_TURNS * Math.PI * 2;
+    const radius = YARN_R * (1.08 + t * 3.3);
+    threadPts.push(new THREE.Vector3(
+      Math.cos(angle) * radius,
+      Math.sin(angle) * radius * 0.68 - t * YARN_R * 0.96,
+      Math.sin(angle * 1.3) * YARN_R * 0.6 - t * YARN_R * 1.5
+    ));
+  }
+  const threadCurve = new THREE.CatmullRomCurve3(threadPts);
+  const THREAD_TUBULAR_SEGMENTS = 260;
+  const THREAD_RADIAL_SEGMENTS = 8;
+  const threadGeo = new THREE.TubeGeometry(threadCurve, THREAD_TUBULAR_SEGMENTS, YARN_R * 0.065, THREAD_RADIAL_SEGMENTS, false);
+  threadGeo.setDrawRange(0, 0);
+  const threadMat = new THREE.MeshStandardMaterial({ color: 0xc2601f, roughness: 0.32, metalness: 0.55 });
+  const threadMesh = new THREE.Mesh(threadGeo, threadMat);
+  threadMesh.userData.totalSegments = THREAD_TUBULAR_SEGMENTS;
+  threadMesh.userData.indicesPerSeg = THREAD_RADIAL_SEGMENTS * 6;
+  yarnAnchor.add(threadMesh);
+
+  scene.add(yarnAnchor);
+
+  const yarnDesiredPos = new THREE.Vector3();
+  const yarnForward = new THREE.Vector3();
+  const yarnRight = new THREE.Vector3();
+  const yarnUp = new THREE.Vector3();
+  const YARN_REF_ASPECT = 1.6;
+  function updateYarnBall() {
+    // Horizontal FOV narrows on tall/portrait viewports, so a fixed
+    // world-space side offset would push the ball off-screen on mobile —
+    // scale it by the camera's aspect ratio to keep it in a similar
+    // relative screen position at any viewport shape.
+    const aspectScale = Math.min(1, camera.aspect / YARN_REF_ASPECT);
+    const portrait = camera.aspect < 0.85;
+    yarnForward.set(0, 0, -1).applyQuaternion(camera.quaternion);
+    yarnRight.set(1, 0, 0).applyQuaternion(camera.quaternion);
+    yarnUp.set(0, 1, 0).applyQuaternion(camera.quaternion);
+    yarnDesiredPos.copy(camera.position)
+      .addScaledVector(yarnForward, portrait ? 27 : 18.5)
+      .addScaledVector(yarnRight, (portrait ? 3.6 : 6.6) * aspectScale)
+      .addScaledVector(yarnUp, portrait ? -8.6 : -1.2);
+    if (reducedMotion) yarnAnchor.position.copy(yarnDesiredPos);
+    else yarnAnchor.position.lerp(yarnDesiredPos, 0.12);
+
+    const revealSegs = Math.max(1, Math.round(scrollFrac * threadMesh.userData.totalSegments));
+    threadGeo.setDrawRange(0, revealSegs * threadMesh.userData.indicesPerSeg);
+  }
 
   /* ribbon particles — drifting fabric swatches */
   const isSmall = window.innerWidth < 720;
@@ -235,25 +317,6 @@
     scene.add(mesh);
     ribbons.push(mesh);
   }
-
-  /* thread curves — long looping gold strands through the void */
-  const threadGroup = new THREE.Group();
-  for (let i = 0; i < 5; i++) {
-    const pts = [];
-    const baseZ = Z_START - i * ((Z_START - Z_END) / 5);
-    for (let j = 0; j < 6; j++) {
-      pts.push(new THREE.Vector3(
-        (Math.random() - 0.5) * 50,
-        (Math.random() - 0.5) * 30,
-        baseZ - j * 8 + (Math.random() - 0.5) * 6
-      ));
-    }
-    const curve = new THREE.CatmullRomCurve3(pts);
-    const tubeGeo = new THREE.TubeGeometry(curve, 64, 0.045, 6, false);
-    const tubeMat = new THREE.MeshStandardMaterial({ color: 0xc9a24a, roughness: 0.3, metalness: 0.6, transparent: true, opacity: 0.55 });
-    threadGroup.add(new THREE.Mesh(tubeGeo, tubeMat));
-  }
-  scene.add(threadGroup);
 
   /* ---------------- section theme tracking ---------------- */
   let currentTheme = 'hero';
@@ -307,6 +370,7 @@
     camera.position.x = Math.sin(scrollFrac * Math.PI * 2.4) * 3 + parX * 2.2;
     camera.position.y = Math.cos(scrollFrac * Math.PI * 1.6) * 1.4 - parY * 1.4;
     camera.lookAt(camera.position.x * 0.4, camera.position.y * 0.4, camera.position.z - 30);
+    updateYarnBall();
   }
 
   function animate(time) {
@@ -315,7 +379,8 @@
     updateCamera();
     lerpLightToTheme();
 
-    spoolGroup.rotation.y += 0.0035;
+    ballSpin.rotation.y += 0.006;
+    ballSpin.rotation.x += 0.0022;
 
     const t = time * 0.001;
     ribbons.forEach(r => {

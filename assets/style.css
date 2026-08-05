@@ -4,8 +4,8 @@
 :root {
   --bg: #0b0a08;
   --bg-soft: #131110;
-  --panel: rgba(255,255,255,0.035);
-  --panel-border: rgba(255,255,255,0.09);
+  --panel: rgba(17,15,11,0.86);
+  --panel-border: rgba(255,255,255,0.1);
   --ink: #f3ecdf;
   --muted: #a89e8f;
   --accent: #c9a24a;
@@ -74,7 +74,7 @@ section.scene-section { scroll-margin-top: 70px; }
 }
 .scene-veil {
   position: fixed; inset: 0; z-index: -1;
-  background: radial-gradient(ellipse 80% 60% at 50% 0%, transparent 0%, var(--bg) 92%);
+  background: radial-gradient(ellipse 95% 90% at 50% 22%, transparent 0%, rgba(11,10,8,0.55) 100%);
   pointer-events: none;
 }
 
