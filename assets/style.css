@@ -318,7 +318,7 @@ h1 .ink { color: var(--accent); font-style: italic; }
 .tl-brands { font-size: 0.72rem; color: var(--muted); background: rgba(255,255,255,0.06); padding: 0.15rem 0.6rem; border-radius: 999px; }
 .tl-card ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
 .tl-card li { font-size: 0.9rem; color: var(--muted); padding-left: 1.1rem; position: relative; }
-.tl-card li::before { content: '—'; position: absolute; left: 0; color: var(--accent); }
+.tl-card li::before { content: '•'; position: absolute; left: 0; color: var(--accent); }
 .tl-note { margin-top: 1.4rem; font-size: 0.76rem; color: var(--muted); font-style: italic; }
 
 /* ============ CONTACT ============ */
