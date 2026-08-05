@@ -181,6 +181,7 @@
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.localClippingEnabled = true;
 
   /* lights */
   const ambient = new THREE.AmbientLight(0x2b2114, 0.9);
@@ -193,13 +194,12 @@
   scene.add(light2);
 
   /* ===============================================================
-     MANNEQUIN — a realistic tailor's dress form on a stand, always
-     anchored a fixed distance in front of the camera. As you scroll,
-     one knit row of thread at a time wraps around it from the bust
-     down to the hem — by the bottom of the page it's fully dressed
-     in a finished garment. The dress colour follows the swatch picker.
+     MANNEQUIN — a wireframe dress-form cage, centred in view, that
+     fills in with a solid, beautiful dress from the neckline down as
+     you scroll — by the bottom of the page it reads as fully dressed.
+     The dress colour follows the swatch picker.
      =============================================================== */
-  const DRESS_SCALE = isTouch ? 0.36 : 0.62;
+  const DRESS_SCALE = isTouch ? 0.62 : 1.0;
   const dressAnchor = new THREE.Group();
   const dressSpin = new THREE.Group();
   dressAnchor.add(dressSpin);
@@ -212,9 +212,10 @@
     [0.55, -3.0], [0.05, -3.3],
   ];
   const profile = profilePts.map(([x, y]) => new THREE.Vector2(x, y));
+  const BODY_TOP = profilePts[0][1], BODY_BOTTOM = profilePts[profilePts.length - 1][1];
 
-  // Linear-interpolated body radius at an arbitrary height, so the
-  // dress rows can hug the silhouette's curve at every point.
+  // Linear-interpolated body radius at an arbitrary height, so both the
+  // wireframe cage and the dress fill hug the silhouette's true curve.
   function bodyRadiusAt(y) {
     for (let i = 0; i < profilePts.length - 1; i++) {
       const [xa, ya] = profilePts[i];
@@ -227,12 +228,27 @@
     return profilePts[profilePts.length - 1][0];
   }
 
-  const torsoGeo = new THREE.LatheGeometry(profile, 64);
-  const torso = new THREE.Mesh(
-    torsoGeo,
-    new THREE.MeshStandardMaterial({ color: 0xe6d9bd, roughness: 0.68, metalness: 0.02, side: THREE.DoubleSide })
-  );
-  dressSpin.add(torso);
+  // Wireframe "blueprint" cage: latitude rings + longitude meridians,
+  // like a tailor's croquis — clean grid lines, not a dense triangle mesh.
+  const wireGroup = new THREE.Group();
+  const wireMat = new THREE.LineBasicMaterial({ color: 0xe4d9bd, transparent: true, opacity: 0.5 });
+  const LAT_COUNT = 26, LAT_SEG = 56, LON_COUNT = 20;
+  for (let i = 0; i < LAT_COUNT; i++) {
+    const y = BODY_TOP - (i / (LAT_COUNT - 1)) * (BODY_TOP - BODY_BOTTOM);
+    const r = bodyRadiusAt(y);
+    const pts = [];
+    for (let j = 0; j <= LAT_SEG; j++) {
+      const a = (j / LAT_SEG) * Math.PI * 2;
+      pts.push(new THREE.Vector3(Math.cos(a) * r, y, Math.sin(a) * r));
+    }
+    wireGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), wireMat));
+  }
+  for (let i = 0; i < LON_COUNT; i++) {
+    const a = (i / LON_COUNT) * Math.PI * 2;
+    const pts = profilePts.map(([x, y]) => new THREE.Vector3(Math.cos(a) * x, y, Math.sin(a) * x));
+    wireGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), wireMat));
+  }
+  dressSpin.add(wireGroup);
 
   // Stand: a slim rod and a round foot, like a real dress form.
   const standMat = new THREE.MeshStandardMaterial({ color: 0x241c12, roughness: 0.45, metalness: 0.6 });
@@ -243,47 +259,35 @@
   foot.position.y = -4.95;
   dressSpin.add(foot);
 
-  // One shared material for the whole garment, so the swatch picker
-  // can recolour it instantly (see onSwatchChange wiring below).
-  const dressMat = new THREE.MeshStandardMaterial({ color: 0xc9a24a, roughness: 0.5, metalness: 0.18 });
+  // The dress itself: a solid, smoothly-shaded surface sitting just
+  // outside the wireframe, revealed by a horizontal clip plane that
+  // sweeps downward as you scroll — so it looks like it's filling in.
+  const fillPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  const dressMat = new THREE.MeshStandardMaterial({
+    color: 0xc9a24a, roughness: 0.42, metalness: 0.24, side: THREE.DoubleSide,
+    clippingPlanes: [fillPlane],
+  });
+  const DRESS_TOP = 2.9, DRESS_BOTTOM = -2.6;
+  const dressGeo = new THREE.LatheGeometry(profile, 56);
+  dressGeo.scale(1.025, 1.025, 1.025);
+  const dressMesh = new THREE.Mesh(dressGeo, dressMat);
+  dressSpin.add(dressMesh);
 
-  // Fixed neckline trim — the garment's top edge, always in place.
-  const DRESS_TOP = 2.85, DRESS_BOTTOM = -2.55;
-  const necklineTrim = new THREE.Mesh(
-    new THREE.TorusGeometry(bodyRadiusAt(DRESS_TOP) * 1.05, 0.05, 10, 48),
-    dressMat
-  );
-  necklineTrim.rotation.x = Math.PI / 2;
-  necklineTrim.position.y = DRESS_TOP;
-  dressSpin.add(necklineTrim);
+  // A fine trim line that travels with the fill edge — the "leading
+  // thread" of the hem currently being finished.
+  const trimMat = new THREE.MeshStandardMaterial({ color: 0xfff3d6, roughness: 0.3, metalness: 0.5 });
+  const trim = new THREE.Mesh(new THREE.TorusGeometry(1, 0.045, 10, 48), trimMat);
+  trim.rotation.x = Math.PI / 2;
+  dressSpin.add(trim);
 
-  // The garment itself: many close-set knit rows, hugging the body's
-  // curve, each one revealed (and gently "cinched" into place) as the
-  // scroll position reaches it — see updateDressReveal().
-  const DRESS_ROWS = 64;
-  const dressRings = [];
-  for (let i = 0; i < DRESS_ROWS; i++) {
-    const t = i / (DRESS_ROWS - 1);
-    const y = DRESS_TOP - t * (DRESS_TOP - DRESS_BOTTOM);
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(bodyRadiusAt(y) * 1.045, 0.062, 8, 40),
-      dressMat
-    );
-    ring.rotation.x = Math.PI / 2;
-    ring.position.y = y;
-    ring.visible = false;
-    dressSpin.add(ring);
-    dressRings.push(ring);
-  }
-
-  const dressLight = new THREE.PointLight(0xffe9c2, 1.4, 26);
-  dressLight.position.set(3, 3, 6);
+  const dressLight = new THREE.PointLight(0xffe9c2, 1.5, 30);
+  dressLight.position.set(3, 4, 7);
   dressAnchor.add(dressLight);
-  const dressRim = new THREE.PointLight(0xc9a24a, 0.8, 20);
-  dressRim.position.set(-4, -1, -3);
+  const dressRim = new THREE.PointLight(0xc9a24a, 0.9, 24);
+  dressRim.position.set(-5, -1, -3);
   dressAnchor.add(dressRim);
-  const dressFill = new THREE.PointLight(0xfff3e0, 0.55, 22);
-  dressFill.position.set(0, -2, 7);
+  const dressFill = new THREE.PointLight(0xfff3e0, 0.6, 24);
+  dressFill.position.set(0, -2, 8);
   dressAnchor.add(dressFill);
 
   dressSpin.scale.setScalar(DRESS_SCALE);
@@ -291,38 +295,36 @@
 
   // Wire the swatch picker to the garment colour now that dressMat exists.
   const swatchColorMap = { gold: 0xc9a24a, coral: 0xd97a5f, sage: 0x8fb39a, orchid: 0xc48fce };
-  onSwatchChange = (name) => { dressMat.color.setHex(swatchColorMap[name] || swatchColorMap.gold); };
+  onSwatchChange = (name) => {
+    const hex = swatchColorMap[name] || swatchColorMap.gold;
+    dressMat.color.setHex(hex);
+    trimMat.color.setHex(hex).lerp(new THREE.Color(0xffffff), 0.35);
+  };
   onSwatchChange(currentSwatchName);
 
+  const fillPoint = new THREE.Vector3();
+  const upVec = new THREE.Vector3(0, 1, 0);
   function updateDressReveal() {
-    const activeF = scrollFrac * DRESS_ROWS;
-    for (let i = 0; i < DRESS_ROWS; i++) {
-      const p = Math.min(1, Math.max(0, activeF - i));
-      const ring = dressRings[i];
-      ring.visible = p > 0.001;
-      if (ring.visible) ring.scale.setScalar(0.05 + (p * p * (3 - 2 * p)) * 0.95);
-    }
+    const threshold = DRESS_TOP - scrollFrac * (DRESS_TOP - DRESS_BOTTOM);
+    const worldY = dressAnchor.position.y + threshold * DRESS_SCALE;
+    fillPoint.set(dressAnchor.position.x, worldY, dressAnchor.position.z);
+    fillPlane.setFromNormalAndCoplanarPoint(upVec, fillPoint);
+    trim.position.set(dressAnchor.position.x, worldY, dressAnchor.position.z);
+    const r = bodyRadiusAt(threshold) * 1.03 * DRESS_SCALE;
+    trim.scale.set(r, r, 1);
+    trim.visible = scrollFrac > 0.01 && scrollFrac < 0.999;
   }
 
   const dressDesiredPos = new THREE.Vector3();
   const dressForward = new THREE.Vector3();
-  const dressRight = new THREE.Vector3();
   const dressUp = new THREE.Vector3();
-  const DRESS_REF_ASPECT = 1.6;
   function updateHeroObject() {
-    // Horizontal FOV narrows on tall/portrait viewports, so a fixed
-    // world-space side offset would push the object off-screen on mobile —
-    // scale it by the camera's aspect ratio to keep a similar relative
-    // screen position at any viewport shape.
-    const aspectScale = Math.min(1, camera.aspect / DRESS_REF_ASPECT);
-    const portrait = camera.aspect < 0.85;
+    // Centred directly in front of the camera at all times.
     dressForward.set(0, 0, -1).applyQuaternion(camera.quaternion);
-    dressRight.set(1, 0, 0).applyQuaternion(camera.quaternion);
     dressUp.set(0, 1, 0).applyQuaternion(camera.quaternion);
     dressDesiredPos.copy(camera.position)
-      .addScaledVector(dressForward, portrait ? 15 : 15.5)
-      .addScaledVector(dressRight, (portrait ? 2.6 : 5.4) * aspectScale)
-      .addScaledVector(dressUp, portrait ? -3.4 : -0.4);
+      .addScaledVector(dressForward, 16.5)
+      .addScaledVector(dressUp, -0.3);
     if (reducedMotion) dressAnchor.position.copy(dressDesiredPos);
     else dressAnchor.position.lerp(dressDesiredPos, 0.12);
 
