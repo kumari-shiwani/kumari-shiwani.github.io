@@ -155,7 +155,7 @@ section.scene-section { scroll-margin-top: 70px; }
 .container { max-width: 1000px; margin: 0 auto; padding: 0 2rem; position: relative; }
 .container.center, .center { text-align: center; }
 
-.scene-section { padding: 8rem 0; position: relative; min-height: 60vh; display: flex; align-items: center; }
+.scene-section { padding: 8rem 0; position: relative; min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: stretch; }
 #hero.scene-section { min-height: 100vh; padding-top: 6rem; }
 
 .section-label {
@@ -256,7 +256,11 @@ h1 .ink { color: var(--accent); font-style: italic; }
 }
 
 /* ============ PORTFOLIO GALLERY ============ */
-.portfolio-intro { max-width: 620px; margin: 0 auto 2.2rem; color: var(--muted); text-align: center; }
+/* Pages are wide banner boards (2.83:1) — this section gets a wider
+   container than the rest of the site so cards can be big enough to
+   actually read tech-pack text and measurements at a glance. */
+#portfolio .container { max-width: 1320px; }
+.portfolio-intro { max-width: 680px; margin: 0 auto 2.2rem; color: var(--muted); text-align: center; }
 
 .portfolio-tabs {
   display: flex; justify-content: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 2.2rem;
@@ -270,31 +274,34 @@ h1 .ink { color: var(--accent); font-style: italic; }
 .portfolio-tab.active { background: var(--accent); color: #171307; border-color: var(--accent); font-weight: 500; }
 
 .portfolio-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); gap: 1.4rem;
 }
 .portfolio-grid figure {
   margin: 0; border-radius: 12px; overflow: hidden; cursor: pointer; position: relative;
-  border: 1px solid var(--panel-border); background: var(--panel);
+  border: 1px solid var(--panel-border); background: transparent;
   aspect-ratio: 1683 / 595; transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
 }
-.portfolio-grid figure:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 10px 26px rgba(0,0,0,0.35); }
-.portfolio-grid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.portfolio-grid figure:hover { transform: translateY(-4px) scale(1.015); border-color: var(--accent); box-shadow: 0 14px 32px rgba(0,0,0,0.4); }
+.portfolio-grid img { width: 100%; height: 100%; object-fit: contain; display: block; background: #fff; }
 .portfolio-grid figure::after {
-  content: '⤢'; position: absolute; right: 0.5rem; bottom: 0.5rem; width: 26px; height: 26px;
-  border-radius: 50%; background: rgba(11,10,8,0.6); color: var(--accent);
-  display: flex; align-items: center; justify-content: center; font-size: 0.8rem;
+  content: '⤢'; position: absolute; right: 0.6rem; bottom: 0.6rem; width: 30px; height: 30px;
+  border-radius: 50%; background: rgba(11,10,8,0.65); color: var(--accent);
+  display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
   opacity: 0; transition: opacity 0.2s;
 }
 .portfolio-grid figure:hover::after { opacity: 1; }
+@media (max-width: 640px) {
+  .portfolio-grid { grid-template-columns: 1fr; }
+}
 
 /* ============ LIGHTBOX ============ */
 .lightbox {
   position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center;
-  background: rgba(6,5,4,0.94); opacity: 0; visibility: hidden; transition: opacity 0.25s, visibility 0.25s;
-  padding: 4rem 1.5rem;
+  background: rgba(6,5,4,0.97); opacity: 0; visibility: hidden; transition: opacity 0.25s, visibility 0.25s;
+  padding: 3.5rem 1.5rem;
 }
 .lightbox.open { opacity: 1; visibility: visible; }
-.lightbox-img { max-width: 90vw; max-height: 84vh; object-fit: contain; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
+.lightbox-img { max-width: 96vw; max-height: 90vh; object-fit: contain; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); background: #fff; }
 .lightbox-close, .lightbox-nav {
   position: absolute; background: rgba(255,255,255,0.06); border: 1px solid var(--panel-border); color: var(--ink);
   border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -328,38 +335,15 @@ h1 .ink { color: var(--accent); font-style: italic; }
 @keyframes marqueeLeft { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @keyframes marqueeRight { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 
-/* ============ TAG CLOUD (competencies) ============ */
-.tag-cloud { display: flex; flex-wrap: wrap; gap: 0.8rem; }
-.tag-cloud span {
-  padding: 0.55rem 1.2rem; border-radius: 999px; font-size: 0.85rem;
-  background: var(--panel); border: 1px solid var(--panel-border); color: var(--ink);
-  transition: transform 0.25s, border-color 0.25s, color 0.25s, background 0.25s;
-  animation: floaty 6s ease-in-out infinite;
+/* ============ SKILLS (marquee rows, one per category) ============ */
+.skill-row { margin-bottom: 1.6rem; }
+.skill-row:last-child { margin-bottom: 0; }
+.skill-row-label {
+  display: block; text-align: center; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); font-weight: 500; margin-bottom: 0.7rem;
 }
-.tag-cloud span:nth-child(odd) { animation-delay: -1.5s; }
-.tag-cloud span:nth-child(3n) { animation-delay: -3s; }
-.tag-cloud span:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); transform: translateY(-4px) scale(1.05); }
-@keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-
-/* ============ SKILLS ============ */
-.skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.4rem; }
-.skill-card {
-  background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius);
-  padding: 1.8rem; position: relative; overflow: hidden;
-}
-.skill-card::before {
-  content: ''; position: absolute; top: 0; left: 0; height: 2px; width: 100%;
-  background: linear-gradient(90deg, var(--accent), transparent); opacity: 0.6;
-}
-.skill-icon { font-size: 1.8rem; margin-bottom: 0.9rem; }
-.skill-card h3 { font-family: var(--serif); font-size: 1.2rem; margin-bottom: 0.9rem; color: var(--ink); }
-.skill-card ul { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
-.skill-card li {
-  font-size: 0.85rem; color: var(--muted); padding-left: 1rem; position: relative;
-}
-.skill-card li::before {
-  content: ''; position: absolute; left: 0; top: 0.5em; width: 6px; height: 1px; background: var(--accent);
-}
+.skill-row .marquee-wrap { gap: 0; }
+.skill-row .marquee-track span { font-size: 1.15rem; }
 
 /* ============ TIMELINE (experience) ============ */
 .timeline { display: flex; flex-direction: column; gap: 0; position: relative; padding-left: 2.4rem; border-left: 1px solid var(--panel-border); }
