@@ -38,6 +38,7 @@
   </button>
   <ul id="navList">
     <li><a href="#about">About</a></li>
+    <li><a href="#portfolio">Portfolio</a></li>
     <li><a href="#brands">Brands</a></li>
     <li><a href="#competencies">Craft</a></li>
     <li><a href="#skills">Skills</a></li>
@@ -111,6 +112,25 @@
           <a href="https://www.linkedin.com/in/shiwanikumari3" target="_blank" rel="noopener">LinkedIn ↗</a>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- PORTFOLIO -->
+  <section id="portfolio" class="scene-section" data-theme="portfolio">
+    <div class="container">
+      <p class="section-label center">From the Portfolio</p>
+      <h2 class="section-title center reveal">Sixty-five pages of process,<br>in one place.</h2>
+      <p class="portfolio-intro reveal">Brand boards, trend forecasts, technical flats, tech packs and
+        finished product — the real working documents behind four collections. Tap any page to view it full size.</p>
+
+      <div class="portfolio-tabs reveal" role="tablist" aria-label="Portfolio collections">
+        <button class="portfolio-tab active" data-cat="kidswear" role="tab" aria-selected="true">Kidswear</button>
+        <button class="portfolio-tab" data-cat="sportswear" role="tab" aria-selected="false">Sportswear</button>
+        <button class="portfolio-tab" data-cat="loungewear" role="tab" aria-selected="false">Loungewear</button>
+        <button class="portfolio-tab" data-cat="fcuk" role="tab" aria-selected="false">FCUK Graphics</button>
+      </div>
+
+      <div class="portfolio-grid reveal" id="portfolioGrid"></div>
     </div>
   </section>
 
@@ -305,6 +325,15 @@
 <footer>
   <p>Designed &amp; woven by Shiwani Kumari &middot; <span id="year"></span></p>
 </footer>
+
+<!-- PORTFOLIO LIGHTBOX -->
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Close">&times;</button>
+  <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Previous page">&#8249;</button>
+  <img class="lightbox-img" id="lightboxImg" src="" alt="Portfolio page" />
+  <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next page">&#8250;</button>
+  <div class="lightbox-count" id="lightboxCount"></div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="assets/script.js"></script>

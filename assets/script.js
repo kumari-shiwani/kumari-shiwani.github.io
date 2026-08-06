@@ -109,7 +109,7 @@
   /* ---------------- SWATCH PALETTE PICKER ---------------- */
   const swatches = document.querySelectorAll('.swatch');
   let currentSwatchName = 'gold';
-  let onSwatchChange = () => {}; // wired up later, once the 3D ribbon material exists
+  let onSwatchChange = () => {}; // wired up later, once the 3D gallery frame material exists
   function applySwatch(name) {
     if (name) document.documentElement.setAttribute('data-swatch', name);
     else document.documentElement.removeAttribute('data-swatch');
@@ -149,6 +149,90 @@
     btn.addEventListener('click', (e) => spawnConfetti(e.clientX, e.clientY));
   });
 
+  /* ---------------- PORTFOLIO GALLERY + LIGHTBOX ---------------- */
+  const PORTFOLIO_CATS = {
+    kidswear:   [2, 24],
+    sportswear: [25, 47],
+    loungewear: [48, 60],
+    fcuk:       [61, 64],
+  };
+  function pad2(n) { return String(n).padStart(2, '0'); }
+  function portfolioThumb(n) { return `assets/portfolio/thumb/page-${pad2(n)}.jpg`; }
+  function portfolioFull(n) { return `assets/portfolio/full/page-${pad2(n)}.jpg`; }
+
+  const portfolioGrid = document.getElementById('portfolioGrid');
+  const portfolioTabs = document.querySelectorAll('.portfolio-tab');
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxCount = document.getElementById('lightboxCount');
+  let portfolioList = [];
+  let lightboxIndex = 0;
+
+  function renderPortfolioGrid(cat) {
+    if (!portfolioGrid) return;
+    const [start, end] = PORTFOLIO_CATS[cat] || PORTFOLIO_CATS.kidswear;
+    portfolioList = [];
+    portfolioGrid.innerHTML = '';
+    for (let n = start; n <= end; n++) {
+      const idx = portfolioList.length;
+      portfolioList.push(n);
+      const fig = document.createElement('figure');
+      const img = document.createElement('img');
+      img.src = portfolioThumb(n);
+      img.loading = 'lazy';
+      img.alt = `Portfolio page ${n}`;
+      fig.appendChild(img);
+      fig.addEventListener('click', () => openLightbox(idx));
+      portfolioGrid.appendChild(fig);
+    }
+  }
+
+  function openLightbox(idx) {
+    lightboxIndex = idx;
+    updateLightbox();
+    lightbox.classList.add('open');
+    lightbox.setAttribute('aria-hidden', 'false');
+  }
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    lightbox.setAttribute('aria-hidden', 'true');
+  }
+  function updateLightbox() {
+    const pageNum = portfolioList[lightboxIndex];
+    lightboxImg.src = portfolioFull(pageNum);
+    lightboxImg.alt = `Portfolio page ${pageNum}`;
+    if (lightboxCount) lightboxCount.textContent = `${lightboxIndex + 1} / ${portfolioList.length}`;
+  }
+  function stepLightbox(dir) {
+    lightboxIndex = (lightboxIndex + dir + portfolioList.length) % portfolioList.length;
+    updateLightbox();
+  }
+
+  portfolioTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      portfolioTabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      renderPortfolioGrid(tab.dataset.cat);
+    });
+  });
+
+  const lightboxClose = document.getElementById('lightboxClose');
+  const lightboxPrev = document.getElementById('lightboxPrev');
+  const lightboxNext = document.getElementById('lightboxNext');
+  if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+  if (lightboxPrev) lightboxPrev.addEventListener('click', () => stepLightbox(-1));
+  if (lightboxNext) lightboxNext.addEventListener('click', () => stepLightbox(1));
+  if (lightbox) lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox || !lightbox.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') stepLightbox(-1);
+    if (e.key === 'ArrowRight') stepLightbox(1);
+  });
+
+  renderPortfolioGrid('kidswear');
+
   /* ================================================================
      3D SCENIC BACKGROUND (Three.js)
      ================================================================ */
@@ -158,13 +242,13 @@
   const THEME_COLORS = {
     hero:         0xc9a24a,
     about:        0xd97a5f,
+    portfolio:    0xc48fce,
     brands:       0x8fb39a,
     competencies: 0xc48fce,
     skills:       0xc9a24a,
     experience:   0xd97a5f,
     contact:      0x8fb39a,
   };
-  const sectionOrder = ['hero', 'about', 'brands', 'competencies', 'skills', 'experience', 'contact'];
 
   const scene = new THREE.Scene();
   const bgColor = new THREE.Color(0x0b0a08);
@@ -177,7 +261,7 @@
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.localClippingEnabled = true;
+  if ('outputEncoding' in renderer) renderer.outputEncoding = THREE.sRGBEncoding;
 
   /* lights */
   const ambient = new THREE.AmbientLight(0x2b2114, 0.9);
@@ -190,124 +274,88 @@
   scene.add(light2);
 
   /* ===============================================================
-     RIBBON — a length of satin unspooling gracefully through space,
-     centred in view. As you scroll it draws further out from the
-     spool in a loose flowing flourish, catching the light like real
-     fabric; the ribbon's colour follows the swatch picker. Built from
-     a hand-rolled ribbon strip (not an attempt at a realistic body),
-     which is what keeps it reliably beautiful at every angle.
+     GALLERY RING — a rotating 3D carousel of real pages from the
+     portfolio, textured onto framed panels. Centred in view. Because
+     the "3D objects" are actual photographs of real design work, it
+     reads as genuinely realistic at every angle — no risk of looking
+     like an abstract shape gone wrong. Spins continuously, and each
+     scroll adds a bit more spin, tying the motion to the page.
      =============================================================== */
-  const RIBBON_SCALE = isTouch ? 0.9 : 1.5;
-  const ribbonAnchor = new THREE.Group();
-  const ribbonSpin = new THREE.Group();
-  ribbonAnchor.add(ribbonSpin);
+  const GALLERY_PAGES = [1, 4, 9, 19, 26, 34, 39, 48, 50, 57, 61];
+  const GALLERY_SCALE = isTouch ? 0.5 : 0.82;
+  const galleryAnchor = new THREE.Group();
+  const gallerySpin = new THREE.Group();
+  galleryAnchor.add(gallerySpin);
 
-  // A loose, elegant flourish through 3D space — the ribbon's path.
-  const ribbonWaypoints = [
-    [0, 3.3, 0], [1.7, 2.1, 1.3], [2.6, 0.3, -0.7], [1.1, -1.3, 1.5],
-    [-1.4, -2.1, -1.0], [-2.7, -0.1, 1.3], [-1.1, 1.9, -0.7], [0.6, 3.1, 0.9],
-    [2.3, 1.3, -1.4], [2.0, -1.7, 0.5], [0.1, -3.3, -1.0],
-  ].map(([x, y, z]) => new THREE.Vector3(x, y, z));
-  const ribbonCurve = new THREE.CatmullRomCurve3(ribbonWaypoints);
+  const GALLERY_RADIUS = 4.6;
+  const GALLERY_PANEL_W = 3.1;
+  const GALLERY_PANEL_H = GALLERY_PANEL_W * (595 / 1683);
+  const galleryPanelGeo = new THREE.PlaneGeometry(GALLERY_PANEL_W, GALLERY_PANEL_H);
+  const galleryFrameGeo = new THREE.PlaneGeometry(GALLERY_PANEL_W + 0.16, GALLERY_PANEL_H + 0.16);
+  const galleryFrameMat = new THREE.MeshBasicMaterial({ color: 0xc9a24a });
+  const textureLoader = new THREE.TextureLoader();
 
-  const RIBBON_SEGMENTS = 220, RIBBON_WIDTH = 0.95;
-  function buildRibbonGeometry() {
-    const pts = ribbonCurve.getPoints(RIBBON_SEGMENTS);
-    const worldUp = new THREE.Vector3(0, 1, 0);
-    const positions = [], uvs = [];
-    for (let i = 0; i <= RIBBON_SEGMENTS; i++) {
-      const p = pts[i];
-      const tangent = ribbonCurve.getTangentAt(i / RIBBON_SEGMENTS).normalize();
-      let right = new THREE.Vector3().crossVectors(tangent, worldUp);
-      if (right.lengthSq() < 1e-5) right.set(1, 0, 0);
-      right.normalize().multiplyScalar(RIBBON_WIDTH / 2);
-      positions.push(p.x - right.x, p.y - right.y, p.z - right.z, p.x + right.x, p.y + right.y, p.z + right.z);
-      const v = i / RIBBON_SEGMENTS;
-      uvs.push(0, v, 1, v);
-    }
-    const indices = [];
-    for (let i = 0; i < RIBBON_SEGMENTS; i++) {
-      const a = i * 2, b = i * 2 + 1, c = (i + 1) * 2, d = (i + 1) * 2 + 1;
-      indices.push(a, c, b, b, c, d);
-    }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-    geo.setIndex(indices);
-    geo.computeVertexNormals();
-    return geo;
-  }
-  const ribbonGeo = buildRibbonGeometry();
-  const ribbonMat = new THREE.MeshStandardMaterial({
-    color: 0xc9a24a, roughness: 0.32, metalness: 0.22, side: THREE.DoubleSide,
-    transparent: true, opacity: 0.9,
+  GALLERY_PAGES.forEach((pageNum, i) => {
+    const angle = (i / GALLERY_PAGES.length) * Math.PI * 2;
+    const x = Math.sin(angle) * GALLERY_RADIUS;
+    const z = Math.cos(angle) * GALLERY_RADIUS;
+    const y = Math.sin(angle * 2.3) * 0.4;
+
+    const frame = new THREE.Mesh(galleryFrameGeo, galleryFrameMat);
+    frame.position.set(x, y, z);
+    frame.rotation.y = angle;
+    frame.position.addScaledVector(new THREE.Vector3(Math.sin(angle), 0, Math.cos(angle)), -0.03);
+    gallerySpin.add(frame);
+
+    const tex = textureLoader.load(portfolioThumb(pageNum));
+    if ('encoding' in tex) tex.encoding = THREE.sRGBEncoding;
+    const panelMat = new THREE.MeshBasicMaterial({ map: tex });
+    const panel = new THREE.Mesh(galleryPanelGeo, panelMat);
+    panel.position.set(x, y, z);
+    panel.rotation.y = angle;
+    gallerySpin.add(panel);
   });
-  const ribbonMesh = new THREE.Mesh(ribbonGeo, ribbonMat);
-  ribbonMesh.userData.indicesPerSeg = 6;
-  ribbonMesh.userData.totalSegments = RIBBON_SEGMENTS;
-  ribbonGeo.setDrawRange(0, 6);
-  ribbonSpin.add(ribbonMesh);
 
-  // The spool it unwinds from — a clean, simple, reliably good-looking
-  // object (a cylinder body with a few wound rings), anchoring the
-  // ribbon's story without attempting anything anatomical.
-  const spoolGroup = new THREE.Group();
-  const spoolMat = new THREE.MeshStandardMaterial({ color: 0x2c2115, roughness: 0.85, metalness: 0.08 });
-  const spoolBody = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 1.3, 24, 1, true), spoolMat);
-  spoolBody.rotation.z = Math.PI / 2;
-  spoolGroup.add(spoolBody);
-  const ringMat = new THREE.MeshStandardMaterial({ color: 0xc9a24a, roughness: 0.4, metalness: 0.35 });
-  for (let i = -1; i <= 1; i++) {
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.64, 0.05, 10, 32), ringMat);
-    ring.rotation.y = Math.PI / 2;
-    ring.position.x = i * 0.42;
-    spoolGroup.add(ring);
-  }
-  spoolGroup.position.copy(ribbonWaypoints[0]).add(new THREE.Vector3(0, 0.15, 0));
-  ribbonSpin.add(spoolGroup);
+  gallerySpin.scale.setScalar(GALLERY_SCALE);
+  scene.add(galleryAnchor);
 
-  const ribbonLight = new THREE.PointLight(0xffe9c2, 1.5, 32);
-  ribbonLight.position.set(3, 4, 7);
-  ribbonAnchor.add(ribbonLight);
-  const ribbonRim = new THREE.PointLight(0xc9a24a, 0.9, 26);
-  ribbonRim.position.set(-5, -2, -3);
-  ribbonAnchor.add(ribbonRim);
-  const ribbonFill = new THREE.PointLight(0xfff3e0, 0.55, 24);
-  ribbonFill.position.set(0, -3, 8);
-  ribbonAnchor.add(ribbonFill);
-
-  ribbonSpin.scale.setScalar(RIBBON_SCALE);
-  scene.add(ribbonAnchor);
-
-  // Wire the swatch picker to the ribbon's colour.
+  // The swatch picker tints the frames — a nod to "picking a swatch"
+  // for the whole gallery's accent, without needing a dress to dye.
   const swatchColorMap = { gold: 0xc9a24a, coral: 0xd97a5f, sage: 0x8fb39a, orchid: 0xc48fce };
   onSwatchChange = (name) => {
-    const hex = swatchColorMap[name] || swatchColorMap.gold;
-    ribbonMat.color.setHex(hex);
-    ringMat.color.setHex(hex);
+    galleryFrameMat.color.setHex(swatchColorMap[name] || swatchColorMap.gold);
   };
   onSwatchChange(currentSwatchName);
 
-  function updateRibbonReveal() {
-    const revealSegs = Math.max(1, Math.round(scrollFrac * RIBBON_SEGMENTS));
-    ribbonGeo.setDrawRange(0, revealSegs * ribbonMesh.userData.indicesPerSeg);
-  }
-
-  const ribbonDesiredPos = new THREE.Vector3();
-  const ribbonForward = new THREE.Vector3();
-  const ribbonUp = new THREE.Vector3();
+  const galleryDesiredPos = new THREE.Vector3();
+  const galleryForward = new THREE.Vector3();
+  const galleryUp = new THREE.Vector3();
   function updateHeroObject() {
     // Centred directly in front of the camera at all times.
-    ribbonForward.set(0, 0, -1).applyQuaternion(camera.quaternion);
-    ribbonUp.set(0, 1, 0).applyQuaternion(camera.quaternion);
-    ribbonDesiredPos.copy(camera.position)
-      .addScaledVector(ribbonForward, 20)
-      .addScaledVector(ribbonUp, -0.2);
-    if (reducedMotion) ribbonAnchor.position.copy(ribbonDesiredPos);
-    else ribbonAnchor.position.lerp(ribbonDesiredPos, 0.12);
+    galleryForward.set(0, 0, -1).applyQuaternion(camera.quaternion);
+    galleryUp.set(0, 1, 0).applyQuaternion(camera.quaternion);
+    galleryDesiredPos.copy(camera.position)
+      .addScaledVector(galleryForward, 25)
+      .addScaledVector(galleryUp, -1.9);
+    if (reducedMotion) galleryAnchor.position.copy(galleryDesiredPos);
+    else galleryAnchor.position.lerp(galleryDesiredPos, 0.12);
 
-    updateRibbonReveal();
+    gallerySpin.rotation.y = scrollFrac * Math.PI * 2.4 + galleryIdleSpin;
+
+    // A hero-only flourish: there's a full gallery with a lightbox just
+    // below, so rather than have real portfolio pages float over every
+    // section's text for the whole scroll, fade this carousel out once
+    // you've scrolled past the hero. Based on raw pixels scrolled (not
+    // scroll fraction) so it fades at the same point on any page length —
+    // a fraction-based threshold would barely move on a long mobile page.
+    const scrollPx = document.documentElement.scrollTop || document.body.scrollTop;
+    const fadeStartPx = 60, fadeEndPx = 420;
+    let heroFade = 1 - (scrollPx - fadeStartPx) / (fadeEndPx - fadeStartPx);
+    heroFade = Math.max(0, Math.min(1, heroFade));
+    galleryAnchor.visible = heroFade > 0.01;
+    gallerySpin.scale.setScalar(GALLERY_SCALE * (0.4 + heroFade * 0.6));
   }
+  let galleryIdleSpin = 0;
 
   /* sparse starfield — faint ambient depth, not a debris field */
   const STAR_COUNT = isTouch ? 220 : 420;
@@ -386,8 +434,7 @@
     updateCamera();
     lerpLightToTheme();
 
-    ribbonSpin.rotation.y += 0.0032;
-    ribbonSpin.rotation.x = Math.sin(time * 0.00018) * 0.12;
+    galleryIdleSpin += 0.0025;
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
