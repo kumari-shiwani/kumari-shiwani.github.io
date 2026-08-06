@@ -282,13 +282,13 @@
      scroll adds a bit more spin, tying the motion to the page.
      =============================================================== */
   const GALLERY_PAGES = [1, 4, 9, 19, 26, 34, 39, 48, 50, 57, 61];
-  const GALLERY_SCALE = isTouch ? 0.5 : 0.82;
+  const GALLERY_SCALE = isTouch ? 0.62 : 0.98;
   const galleryAnchor = new THREE.Group();
   const gallerySpin = new THREE.Group();
   galleryAnchor.add(gallerySpin);
 
-  const GALLERY_RADIUS = 4.6;
-  const GALLERY_PANEL_W = 3.1;
+  const GALLERY_RADIUS = 5.6;
+  const GALLERY_PANEL_W = 4.2;
   const GALLERY_PANEL_H = GALLERY_PANEL_W * (595 / 1683);
   const galleryPanelGeo = new THREE.PlaneGeometry(GALLERY_PANEL_W, GALLERY_PANEL_H);
   const galleryFrameGeo = new THREE.PlaneGeometry(GALLERY_PANEL_W + 0.16, GALLERY_PANEL_H + 0.16);
@@ -307,13 +307,26 @@
     frame.position.addScaledVector(new THREE.Vector3(Math.sin(angle), 0, Math.cos(angle)), -0.03);
     gallerySpin.add(frame);
 
-    const tex = textureLoader.load(portfolioThumb(pageNum));
-    if ('encoding' in tex) tex.encoding = THREE.sRGBEncoding;
-    const panelMat = new THREE.MeshBasicMaterial({ map: tex });
+    // Fall back to a solid cream card (instead of going invisible/black)
+    // if the texture can't load — e.g. the page opened directly as a
+    // file:// URL, where browsers block WebGL from reading local images.
+    const panelMat = new THREE.MeshBasicMaterial({ color: 0xf2e8d6 });
     const panel = new THREE.Mesh(galleryPanelGeo, panelMat);
     panel.position.set(x, y, z);
     panel.rotation.y = angle;
     gallerySpin.add(panel);
+
+    textureLoader.load(
+      portfolioThumb(pageNum),
+      (tex) => {
+        if ('encoding' in tex) tex.encoding = THREE.sRGBEncoding;
+        panelMat.map = tex;
+        panelMat.color.set(0xffffff);
+        panelMat.needsUpdate = true;
+      },
+      undefined,
+      () => { /* keep the cream fallback card on error */ }
+    );
   });
 
   gallerySpin.scale.setScalar(GALLERY_SCALE);
@@ -331,12 +344,15 @@
   const galleryForward = new THREE.Vector3();
   const galleryUp = new THREE.Vector3();
   function updateHeroObject() {
-    // Centred directly in front of the camera at all times.
+    // Centred directly in front of the camera at all times. Portrait
+    // viewports stack the hero text much taller (more line-wrapping),
+    // so the carousel needs to sit further down to clear the buttons.
+    const portrait = camera.aspect < 0.85;
     galleryForward.set(0, 0, -1).applyQuaternion(camera.quaternion);
     galleryUp.set(0, 1, 0).applyQuaternion(camera.quaternion);
     galleryDesiredPos.copy(camera.position)
-      .addScaledVector(galleryForward, 25)
-      .addScaledVector(galleryUp, -1.9);
+      .addScaledVector(galleryForward, portrait ? 27 : 23)
+      .addScaledVector(galleryUp, portrait ? -7.6 : -4.9);
     if (reducedMotion) galleryAnchor.position.copy(galleryDesiredPos);
     else galleryAnchor.position.lerp(galleryDesiredPos, 0.12);
 
