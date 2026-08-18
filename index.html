@@ -3,190 +3,282 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shiwani Kumari | 3D Apparel Portfolio</title>
-  <meta name="description" content="An immersive 3D portfolio for Shiwani Kumari, sportswear and knitwear designer specializing in product development, tech packs, activewear, and commercial apparel collections." />
+  <title>Shiwani Kumari | Sportswear &amp; Knitwear Designer</title>
+  <meta name="description" content="An immersive portfolio for Shiwani Kumari, sportswear and knitwear designer specializing in product development, tech packs, activewear, and commercial apparel collections." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
-  <canvas id="stage" aria-hidden="true"></canvas>
-  <div class="grain" aria-hidden="true"></div>
-  <div class="cursor" aria-hidden="true"></div>
-
-  <div id="loader">
-    <div class="loader-mark">SK</div>
-    <div class="loader-line"><span></span></div>
-  </div>
 
   <header class="site-header">
-    <a class="brand" href="#home" aria-label="Shiwani Kumari home">SK</a>
-    <button class="menu-button" id="menuButton" aria-label="Toggle navigation" aria-expanded="false">
-      <span></span><span></span>
-    </button>
-    <nav id="nav">
-      <a href="#work">Work</a>
-      <a href="#studio">Studio</a>
-      <a href="#experience">Experience</a>
-      <a href="#contact">Contact</a>
-    </nav>
+    <div class="nav-pill liquid-glass">
+      <a class="brand" href="#home" aria-label="Shiwani Kumari home">
+        <span class="brand-mark">SK</span>
+        <span class="brand-name">Shiwani Kumari</span>
+      </a>
+      <nav id="nav">
+        <a href="#work">Work</a>
+        <a href="#studio">Studio</a>
+        <a href="#experience">Experience</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="nav-link" href="assets/Shiwani kumari.pdf" download>Portfolio PDF</a>
+        <a class="btn btn-glass liquid-glass" href="assets/Shiwani_CV.pdf" download>Download CV</a>
+      </div>
+      <button class="menu-button" id="menuButton" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span>
+      </button>
+    </div>
   </header>
 
   <main>
-    <section class="hero section" id="home">
-      <div class="hero-copy reveal">
-        <p class="eyebrow">Sportswear & Knitwear Designer</p>
-        <h1>Shiwani Kumari</h1>
+    <section class="hero" id="home">
+      <div class="hero-bg" aria-hidden="true">
+        <img class="hero-bg-img" data-src="assets/portfolio/full/page-04.jpg" alt="" />
+        <img class="hero-bg-img" data-src="assets/portfolio/full/page-25.jpg" alt="" />
+        <img class="hero-bg-img" data-src="assets/portfolio/full/page-57.jpg" alt="" />
+        <div class="hero-bg-scrim"></div>
+      </div>
+
+      <div class="hero-content reveal">
+        <h1 class="hero-heading">Shiwani <em>Kumari</em></h1>
+        <p class="hero-kicker">Sportswear &amp; Knitwear Designer</p>
         <p class="hero-text">Commercial apparel designer building trend-led knitwear, activewear, kidswear, womenswear, and menswear collections from first moodboard to production sign-off.</p>
-        <div class="hero-actions">
-          <a class="button primary" href="#work">Enter The Showroom</a>
-          <a class="button ghost" href="assets/Shiwani_CV.pdf" download>Download CV</a>
+
+        <div class="hero-cta">
+          <a class="pill-cta liquid-glass" href="#work">
+            <span>View Portfolio</span>
+            <span class="pill-cta-arrow">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </span>
+          </a>
+          <a class="btn btn-glass liquid-glass" href="assets/Shiwani_CV.pdf" download>Download CV</a>
+        </div>
+
+        <div class="hero-metrics">
+          <div><span class="metric">4+ yrs</span><span>apparel product development</span></div>
+          <div><span class="metric">9 brands</span><span>Puma, FCUK, Myntra, Levi's, Walmart &amp; more</span></div>
+          <div><span class="metric">360°</span><span>trend, tech pack, sample, fit, vendor, production</span></div>
         </div>
       </div>
 
-      <aside class="hero-panel reveal" aria-label="Career summary">
-        <div>
-          <span class="metric">4+ yrs</span>
-          <span>apparel product development</span>
-        </div>
-        <div>
-          <span class="metric">9 brands</span>
-          <span>Puma, FCUK, Myntra, Levi's, Walmart & more</span>
-        </div>
-        <div>
-          <span class="metric">360°</span>
-          <span>trend, tech pack, sample, fit, vendor, production</span>
-        </div>
-      </aside>
+      <div class="hero-socials">
+        <a class="icon-btn liquid-glass" href="https://www.linkedin.com/in/shiwanikumari3" target="_blank" rel="noopener" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 8.5v9M6.5 5.5v.01M11 17.5v-5c0-1.7 1-3 3-3s3 1.3 3 3v5M11 12v5.5"/><rect x="3" y="3" width="18" height="18" rx="4"/></svg>
+        </a>
+        <a class="icon-btn liquid-glass" href="mailto:shiwanikumari.here@gmail.com" aria-label="Email">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg>
+        </a>
+        <a class="icon-btn liquid-glass" href="tel:+919570186369" aria-label="Phone">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 4h3.2l1.4 4.2-2 1.5a12.3 12.3 0 0 0 5.2 5.2l1.5-2 4.2 1.4v3.2c0 1-.9 1.7-1.8 1.5-4.2-.8-8.3-3-11.2-5.9C2.1 10.1-.1 6 .7 1.8.9.9 1.6 0 2.6 0"/></svg>
+        </a>
+      </div>
+
+      <div class="scroll-cue reveal" aria-hidden="true">
+        <span></span>
+      </div>
     </section>
 
-    <section class="intro section" id="studio">
-      <div class="section-heading reveal">
-        <p class="eyebrow">Designer Profile</p>
-        <h2>Real garments, real constraints, refined into desirable product.</h2>
-      </div>
+    <section class="about" id="studio">
+      <div class="about-glow" aria-hidden="true"></div>
+      <p class="label reveal">Designer Profile</p>
+      <h2 class="about-heading reveal">
+        Trend research then <em>becomes tech packs</em> for<br class="br-desktop" />
+        brands that then <em>need collections, not concepts.</em>
+      </h2>
+
       <div class="studio-grid">
-        <article class="glass-card reveal">
+        <article class="glass-card liquid-glass reveal">
           <h3>Product Thinking</h3>
           <p>Builds seasonal ranges around customer need, market direction, garment performance, target price, and brand handwriting.</p>
         </article>
-        <article class="glass-card reveal">
+        <article class="glass-card liquid-glass reveal">
           <h3>Technical Depth</h3>
           <p>Creates detailed tech packs, technical flats, measurement charts, fit notes, construction callouts, and production-ready artwork.</p>
         </article>
-        <article class="glass-card reveal">
+        <article class="glass-card liquid-glass reveal">
           <h3>Material Sense</h3>
           <p>Sources fabric and trims across knitwear, jersey, rib, lycra blends, activewear, sleepwear, and lifestyle apparel.</p>
         </article>
       </div>
     </section>
 
-    <section class="work section" id="work">
+    <section class="featured">
+      <div class="featured-panel reveal">
+        <img class="featured-img" src="assets/portfolio/full/page-04.jpg" alt="Kidswear brand board for Walmart's Wonder Nation, a case study from Shiwani's portfolio" loading="lazy" />
+        <div class="featured-scrim"></div>
+        <div class="featured-overlay">
+          <div class="featured-card liquid-glass">
+            <p class="label">Design Process</p>
+            <p>Every board starts as a trend story and ends as a production-ready tech pack — sketching, sourcing, fitting, and revising until it's ready for the factory floor.</p>
+          </div>
+          <a class="btn btn-glass liquid-glass featured-btn" href="#work">Explore Portfolio</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="philosophy">
+      <h2 class="philosophy-heading reveal">Craft <em>x</em> Commerce</h2>
+      <div class="philosophy-grid">
+        <div class="philosophy-img reveal">
+          <img src="assets/portfolio/full/page-25.jpg" alt="Sportswear concept illustration exploring movement and performance styling" loading="lazy" />
+        </div>
+        <div class="philosophy-copy reveal">
+          <div class="philosophy-block">
+            <p class="label">From trend to tech pack</p>
+            <p>Every season starts with research — colour, silhouette, fabric, and the culture around them. That research turns into moodboards, then technical flats and detailed tech packs that leave nothing to guesswork.</p>
+          </div>
+          <div class="philosophy-divider"></div>
+          <div class="philosophy-block">
+            <p class="label">Sample to shelf</p>
+            <p>From first sample to fit approval, vendor sourcing, and production sign-off, I stay close to the product until it's ready to ship — because a beautiful sketch means nothing if it can't be made at scale.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="services">
+      <div class="services-glow" aria-hidden="true"></div>
+      <div class="services-header reveal">
+        <h2>What I do</h2>
+        <span class="label services-header-label">Core Craft</span>
+      </div>
+      <div class="services-grid">
+        <article class="service-card liquid-glass reveal">
+          <div class="service-media">
+            <img src="assets/portfolio/full/page-57.jpg" alt="Original graphic tee artwork exploration for a loungewear collection" loading="lazy" />
+          </div>
+          <div class="service-body">
+            <p class="label">Craft</p>
+            <span class="arrow-chip liquid-glass">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+            </span>
+            <h3>Trend &amp; Print Development</h3>
+            <p>Original prints, colour stories, and graphic concepts built from trend research and translated into retail-ready artwork.</p>
+          </div>
+        </article>
+        <article class="service-card liquid-glass reveal">
+          <div class="service-media">
+            <img src="assets/portfolio/full/page-41.jpg" alt="Technical flat sketches for a womenswear collection" loading="lazy" />
+          </div>
+          <div class="service-body">
+            <p class="label">Technical</p>
+            <span class="arrow-chip liquid-glass">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+            </span>
+            <h3>Tech Packs &amp; Production</h3>
+            <p>Detailed technical flats, measurement charts, fit notes, and construction callouts that take a design from sketch to sample to shipped.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="work" id="work">
       <div class="section-heading center reveal">
-        <p class="eyebrow">Portfolio Showroom</p>
-        <h2>Interactive boards from the original portfolio PDF.</h2>
-        <p>Choose a collection, rotate through the boards, and open any page in a high-resolution viewer.</p>
+        <p class="label">Portfolio Showroom</p>
+        <h2>Boards from the original portfolio.</h2>
+        <p class="section-sub">Choose a collection, rotate through the boards, and open any page in a high-resolution viewer.</p>
       </div>
 
       <div class="case-controls reveal" role="tablist" aria-label="Portfolio collections">
-        <button class="case-tab active" data-case="kidswear" role="tab" aria-selected="true">Kidswear</button>
-        <button class="case-tab" data-case="sportswear" role="tab" aria-selected="false">Sportswear</button>
-        <button class="case-tab" data-case="loungewear" role="tab" aria-selected="false">Loungewear</button>
-        <button class="case-tab" data-case="graphics" role="tab" aria-selected="false">FCUK Graphics</button>
+        <button class="case-tab liquid-glass active" data-case="kidswear" role="tab" aria-selected="true">Kidswear</button>
+        <button class="case-tab liquid-glass" data-case="sportswear" role="tab" aria-selected="false">Sportswear</button>
+        <button class="case-tab liquid-glass" data-case="loungewear" role="tab" aria-selected="false">Loungewear</button>
+        <button class="case-tab liquid-glass" data-case="graphics" role="tab" aria-selected="false">FCUK Graphics</button>
       </div>
 
       <div class="showcase reveal">
-        <button class="orbit-button prev" id="prevBoard" aria-label="Previous board">‹</button>
+        <button class="orbit-button liquid-glass prev" id="prevBoard" aria-label="Previous board">‹</button>
         <div class="board-frame" id="boardFrame">
           <img id="boardImage" src="assets/portfolio/full/page-04.jpg" alt="Portfolio board" />
-          <div class="board-shine" aria-hidden="true"></div>
         </div>
-        <button class="orbit-button next" id="nextBoard" aria-label="Next board">›</button>
+        <button class="orbit-button liquid-glass next" id="nextBoard" aria-label="Next board">›</button>
       </div>
 
-      <div class="case-meta reveal">
+      <div class="case-meta liquid-glass reveal">
         <div>
-          <span id="caseLabel">Kidswear</span>
+          <span id="caseLabel" class="label">Kidswear</span>
           <strong id="boardTitle">Brand Board</strong>
         </div>
         <p id="caseCopy">Toddler sleep-and-play concepts with soft jersey, heirloom knitwear cues, applique storytelling, and practical dressing details.</p>
-        <button class="button small" id="openBoard">View Full Board</button>
+        <button class="btn btn-glass liquid-glass" id="openBoard">View Full Board</button>
       </div>
 
       <div class="mini-grid reveal" id="miniGrid" aria-label="Portfolio thumbnails"></div>
     </section>
 
-    <section class="section capabilities">
+    <section class="capabilities">
       <div class="section-heading reveal">
-        <p class="eyebrow">Core Craft</p>
+        <p class="label">Core Craft</p>
         <h2>A designer who can move between imagination and factory detail.</h2>
       </div>
       <div class="capability-wall reveal">
-        <span>Sportswear Design</span>
-        <span>Knitwear Design</span>
-        <span>Activewear</span>
-        <span>Technical Design</span>
-        <span>Trend Forecasting</span>
-        <span>Range Planning</span>
-        <span>Tech Packs</span>
-        <span>Technical Flats</span>
-        <span>Print & Graphic Development</span>
-        <span>Fabric & Trim Sourcing</span>
-        <span>Sample Development</span>
-        <span>Fit Review</span>
-        <span>Vendor Management</span>
-        <span>Production Coordination</span>
+        <span class="liquid-glass">Sportswear Design</span>
+        <span class="liquid-glass">Knitwear Design</span>
+        <span class="liquid-glass">Activewear</span>
+        <span class="liquid-glass">Technical Design</span>
+        <span class="liquid-glass">Trend Forecasting</span>
+        <span class="liquid-glass">Range Planning</span>
+        <span class="liquid-glass">Tech Packs</span>
+        <span class="liquid-glass">Technical Flats</span>
+        <span class="liquid-glass">Print &amp; Graphic Development</span>
+        <span class="liquid-glass">Fabric &amp; Trim Sourcing</span>
+        <span class="liquid-glass">Sample Development</span>
+        <span class="liquid-glass">Fit Review</span>
+        <span class="liquid-glass">Vendor Management</span>
+        <span class="liquid-glass">Production Coordination</span>
       </div>
     </section>
 
-    <section class="experience section" id="experience">
+    <section class="experience" id="experience">
       <div class="section-heading reveal">
-        <p class="eyebrow">Professional Journey</p>
+        <p class="label">Professional Journey</p>
         <h2>From commercial kidswear to full-range apparel leadership.</h2>
       </div>
       <div class="timeline">
-        <article class="timeline-item reveal">
-          <span>Apr 2025 to Present</span>
+        <article class="timeline-item liquid-glass reveal">
+          <span class="label">Apr 2025 to Present</span>
           <h3>Design and Development Lead · MyTUK</h3>
           <p>Leads end-to-end knitwear, sportswear, and lifestyle apparel development from concept through production, including trend research, tech packs, sampling, fit approval, sourcing, buyer presentations, and production coordination.</p>
         </article>
-        <article class="timeline-item reveal">
-          <span>Sep 2024 to Apr 2025</span>
-          <h3>Design & Product Executive · Underlinen Fashion House</h3>
+        <article class="timeline-item liquid-glass reveal">
+          <span class="label">Sep 2024 to Apr 2025</span>
+          <h3>Design &amp; Product Executive · Underlinen Fashion House</h3>
           <p>Owned kidswear development for Milou Swish and contributed across FC, FCUK, and Puma, translating trend and competitor analysis into seasonal palettes, graphics, tech packs, fit reviews, and production-ready product.</p>
         </article>
-        <article class="timeline-item reveal">
-          <span>Apr 2023 to Sep 2024</span>
+        <article class="timeline-item liquid-glass reveal">
+          <span class="label">Apr 2023 to Sep 2024</span>
           <h3>Designer · Puffer Fashion Business Services</h3>
-          <p>Designed kidswear collections for FC, FCUK, and Myntra, developing original prints, moodboards, color stories, fabric trims, and retail-ready ranges across back-to-back seasons.</p>
+          <p>Designed kidswear collections for FC, FCUK, and Myntra, developing original prints, moodboards, colour stories, fabric trims, and retail-ready ranges across back-to-back seasons.</p>
         </article>
       </div>
     </section>
 
-    <section class="contact section" id="contact">
-      <div class="contact-panel reveal">
-        <p class="eyebrow">Contact</p>
-        <h2>Let’s build the next collection.</h2>
+    <section class="contact" id="contact">
+      <div class="contact-panel liquid-glass reveal">
+        <p class="label">Contact</p>
+        <h2>Let's build the next collection.</h2>
         <p>Available for full-time apparel design roles, product development, technical design, and focused freelance capsules.</p>
         <div class="contact-links">
-          <a class="button primary" href="mailto:shiwanikumari.here@gmail.com">Email Shiwani</a>
-          <a class="button ghost" href="tel:+919570186369">+91 95701 86369</a>
-          <a class="button ghost" href="https://www.linkedin.com/in/shiwanikumari3" target="_blank" rel="noopener">LinkedIn</a>
-          <a class="button ghost" href="assets/Shiwani kumari.pdf" download>Portfolio PDF</a>
+          <a class="btn btn-primary" href="mailto:shiwanikumari.here@gmail.com">Email Shiwani</a>
+          <a class="btn btn-glass liquid-glass" href="tel:+919570186369">+91 95701 86369</a>
+          <a class="btn btn-glass liquid-glass" href="https://www.linkedin.com/in/shiwanikumari3" target="_blank" rel="noopener">LinkedIn</a>
+          <a class="btn btn-glass liquid-glass" href="assets/Shiwani kumari.pdf" download>Portfolio PDF</a>
         </div>
       </div>
     </section>
   </main>
 
   <div class="lightbox" id="lightbox" aria-hidden="true">
-    <button class="lightbox-close" id="closeLightbox" aria-label="Close">×</button>
-    <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Previous">‹</button>
+    <button class="lightbox-close liquid-glass" id="closeLightbox" aria-label="Close">×</button>
+    <button class="lightbox-nav liquid-glass lightbox-prev" id="lightboxPrev" aria-label="Previous">‹</button>
     <img id="lightboxImage" src="" alt="Portfolio board full view" />
-    <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next">›</button>
+    <button class="lightbox-nav liquid-glass lightbox-next" id="lightboxNext" aria-label="Next">›</button>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="assets/script.js"></script>
 </body>
 </html>
