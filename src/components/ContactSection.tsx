@@ -25,7 +25,7 @@ export default function ContactSection() {
             Let&rsquo;s build the next collection.
           </h2>
           <p className="text-white/60 text-sm md:text-base leading-relaxed max-w-lg mx-auto mb-10">
-            Available for full-time apparel design roles, product development, technical
+            Available for full time apparel design roles, product development, technical
             design, and focused freelance capsules.
           </p>
 

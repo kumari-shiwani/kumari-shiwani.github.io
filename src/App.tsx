@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import Hero from './components/Hero'
+import BrandMarquee from './components/BrandMarquee'
 import AboutSection from './components/AboutSection'
-import FeaturedBoardSection from './components/FeaturedBoardSection'
-import PhilosophySection from './components/PhilosophySection'
-import ServicesSection from './components/ServicesSection'
+import ProcessSection from './components/ProcessSection'
+import SelectedWorkSection from './components/SelectedWorkSection'
+import CapabilitiesSection from './components/CapabilitiesSection'
 import ExperienceSection from './components/ExperienceSection'
-import GallerySection from './components/GallerySection'
 import ContactSection from './components/ContactSection'
 import Lightbox from './components/Lightbox'
 import { galleryCount } from './lib/data'
@@ -16,12 +16,12 @@ export default function App() {
   return (
     <div id="home" className="bg-black">
       <Hero />
+      <BrandMarquee />
       <AboutSection />
-      <FeaturedBoardSection onOpen={setOpenPage} />
-      <PhilosophySection />
-      <ServicesSection />
+      <ProcessSection />
+      <SelectedWorkSection onOpen={setOpenPage} />
+      <CapabilitiesSection />
       <ExperienceSection />
-      <GallerySection onOpen={setOpenPage} />
       <ContactSection />
       <Lightbox
         page={openPage}
