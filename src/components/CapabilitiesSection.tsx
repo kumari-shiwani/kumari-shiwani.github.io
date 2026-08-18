@@ -11,7 +11,7 @@ export default function CapabilitiesSection() {
   const rowB = [...capabilities.slice(half), ...capabilities.slice(half)]
 
   return (
-    <section className="relative bg-black py-28 md:py-40 overflow-hidden">
+    <section className="relative py-28 md:py-40 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.03)_0%,_transparent_60%)]" />
 
       <motion.div

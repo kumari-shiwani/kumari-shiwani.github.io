@@ -4,7 +4,7 @@ export default function BrandMarquee() {
   const row = [...brands, ...brands]
 
   return (
-    <div className="bg-black border-y border-white/10 py-6 overflow-hidden">
+    <div className="liquid-glass border-y border-white/10 py-6 overflow-hidden">
       <div className="marquee-track flex items-center gap-16 whitespace-nowrap">
         {row.map((brand, i) => (
           <span

@@ -64,7 +64,7 @@ export default function SelectedWorkSection({ onOpen }: { onOpen: (page: number)
   const stripInView = useInView(stripRef, { once: true, margin: '-100px' })
 
   return (
-    <section id="work" className="bg-black py-28 md:py-40 px-6 overflow-hidden">
+    <section id="work" className="py-28 md:py-40 px-6 overflow-hidden">
       <div className="max-w-6xl mx-auto">
         <motion.div
           ref={headerRef}

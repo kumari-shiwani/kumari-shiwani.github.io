@@ -8,7 +8,7 @@ export default function ContactSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section id="contact" className="bg-black pt-10 pb-16 px-6 overflow-hidden">
+    <section id="contact" className="pt-10 pb-16 px-6 overflow-hidden">
       <div className="max-w-4xl mx-auto">
         <motion.div
           ref={ref}

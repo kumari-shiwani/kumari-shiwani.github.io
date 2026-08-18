@@ -7,7 +7,7 @@ export default function AboutSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <section id="about" ref={ref} className="relative bg-black py-28 md:py-40 px-6 overflow-hidden">
+    <section id="about" ref={ref} className="relative py-28 md:py-40 px-6 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.04)_0%,_transparent_70%)]" />
 
       <div className="relative max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-start">

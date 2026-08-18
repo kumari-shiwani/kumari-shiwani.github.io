@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { ChevronDown, Linkedin, Mail, Phone, Shirt } from 'lucide-react'
-import { contact, heroVideo } from '../lib/data'
+import { contact } from '../lib/data'
 
 const NAV_LINKS = [
   { href: '#process', label: 'Process' },
@@ -9,77 +9,11 @@ const NAV_LINKS = [
   { href: '#contact', label: 'Contact' },
 ]
 
-function animateOpacity(
-  el: HTMLElement,
-  from: number,
-  to: number,
-  duration: number,
-) {
-  const start = performance.now()
-  function step(now: number) {
-    const t = Math.min((now - start) / duration, 1)
-    el.style.opacity = String(from + (to - from) * t)
-    if (t < 1) requestAnimationFrame(step)
-  }
-  requestAnimationFrame(step)
-}
-
 export default function Hero() {
-  const videoRef = useRef<HTMLVideoElement>(null)
   const [menuOpen, setMenuOpen] = useState(false)
-
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-
-    function handleCanPlay() {
-      video!.play().catch(() => {})
-      animateOpacity(video!, 0, 1, 500)
-    }
-
-    function handleTimeUpdate() {
-      const remaining = video!.duration - video!.currentTime
-      if (remaining <= 0.55 && remaining > 0) {
-        animateOpacity(video!, Number(video!.style.opacity || 1), 0, 500)
-      }
-    }
-
-    function handleEnded() {
-      video!.style.opacity = '0'
-      setTimeout(() => {
-        video!.currentTime = 0
-        video!.play().catch(() => {})
-        animateOpacity(video!, 0, 1, 500)
-      }, 100)
-    }
-
-    video.addEventListener('canplay', handleCanPlay)
-    video.addEventListener('timeupdate', handleTimeUpdate)
-    video.addEventListener('ended', handleEnded)
-    return () => {
-      video.removeEventListener('canplay', handleCanPlay)
-      video.removeEventListener('timeupdate', handleTimeUpdate)
-      video.removeEventListener('ended', handleEnded)
-    }
-  }, [])
 
   return (
     <div className="min-h-screen overflow-hidden relative flex flex-col">
-      <div className="absolute inset-0 w-full h-full bg-black">
-        <video
-          ref={videoRef}
-          src={heroVideo}
-          muted
-          autoPlay
-          playsInline
-          preload="auto"
-          style={{ opacity: 0 }}
-          className="absolute inset-0 w-full h-full object-cover object-bottom"
-        />
-        <div className="absolute inset-0 bg-black/55" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/50" />
-      </div>
-
       <nav className="relative z-20 px-6 py-6">
         <div className="liquid-glass rounded-full max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center">

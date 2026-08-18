@@ -33,7 +33,7 @@ export default function ExperienceSection() {
   const headingInView = useInView(headingRef, { once: true, margin: '-100px' })
 
   return (
-    <section id="experience" className="bg-black py-28 md:py-40 px-6 overflow-hidden">
+    <section id="experience" className="py-28 md:py-40 px-6 overflow-hidden">
       <div className="max-w-4xl mx-auto">
         <motion.div
           ref={headingRef}
