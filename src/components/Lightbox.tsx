@@ -1,84 +1,216 @@
-import { useEffect } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
-import { fullSrc, galleryCount } from '../lib/data'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { boards, chapters, contact, fullSrc, thumbSrc } from '../lib/data'
 
-export default function Lightbox({
-  page,
-  onClose,
-  onNavigate,
-}: {
-  page: number | null
-  onClose: () => void
-  onNavigate: (page: number) => void
-}) {
+type Props = { index: number | null; onClose: () => void; onNavigate: (i: number) => void }
+
+type View = { s: number; x: number; y: number }
+const ID: View = { s: 1, x: 0, y: 0 }
+
+export default function Lightbox({ index, onClose, onNavigate }: Props) {
+  const [view, setView] = useState<View>(ID)
+  const [loaded, setLoaded] = useState<number | null>(null)
+  const [visible, setVisible] = useState(false)
+  const stage = useRef<HTMLDivElement>(null)
+  const drag = useRef<{ x: number; y: number; vx: number; vy: number } | null>(null)
+  const pointers = useRef(new Map<number, { x: number; y: number }>())
+  const pinch = useRef<{ d: number; s: number } | null>(null)
+  const closeRef = useRef<HTMLButtonElement>(null)
+  const lastFocus = useRef<Element | null>(null)
+
+  const open = index !== null
+  const b = open ? boards[index] : null
+
   useEffect(() => {
-    if (page === null) return
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
-      if (e.key === 'ArrowLeft') onNavigate(page! === 1 ? galleryCount : page! - 1)
-      if (e.key === 'ArrowRight') onNavigate(page! === galleryCount ? 1 : page! + 1)
+    if (open) {
+      lastFocus.current = document.activeElement
+      requestAnimationFrame(() => setVisible(true))
+      closeRef.current?.focus({ preventScroll: true })
+    } else {
+      setVisible(false)
+      ;(lastFocus.current as HTMLElement | null)?.focus?.({ preventScroll: true })
     }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [page, onClose, onNavigate])
+  }, [open])
+
+  useEffect(() => setView(ID), [index])
+
+  const step = useCallback(
+    (d: number) => {
+      if (index === null) return
+      onNavigate((index + d + boards.length) % boards.length)
+    },
+    [index, onNavigate],
+  )
+
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+      if (e.key === 'ArrowRight') step(1)
+      if (e.key === 'ArrowLeft') step(-1)
+      if (e.key === '+' || e.key === '=') setView((v) => ({ ...v, s: Math.min(5, v.s * 1.4) }))
+      if (e.key === '-') setView((v) => (v.s / 1.4 <= 1.02 ? ID : { ...v, s: v.s / 1.4 }))
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose, step])
+
+  const zoomAt = (cx: number, cy: number, factor: number) => {
+    const el = stage.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    const px = cx - r.left - r.width / 2
+    const py = cy - r.top - r.height / 2
+    setView((v) => {
+      const s = Math.min(6, Math.max(1, v.s * factor))
+      if (s === 1) return ID
+      const k = s / v.s
+      return { s, x: px - (px - v.x) * k, y: py - (py - v.y) * k }
+    })
+  }
+
+  const onWheel = (e: React.WheelEvent) => {
+    zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * 0.0022))
+  }
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    if (pointers.current.size === 2) {
+      const [a, c] = [...pointers.current.values()]
+      pinch.current = { d: Math.hypot(a.x - c.x, a.y - c.y), s: view.s }
+      drag.current = null
+    } else {
+      drag.current = { x: e.clientX, y: e.clientY, vx: e.clientX, vy: e.clientY }
+    }
+  }
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!pointers.current.has(e.pointerId)) return
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    if (pinch.current && pointers.current.size === 2) {
+      const [a, c] = [...pointers.current.values()]
+      const d = Math.hypot(a.x - c.x, a.y - c.y)
+      const target = Math.min(6, Math.max(1, (pinch.current.s * d) / pinch.current.d))
+      zoomAt((a.x + c.x) / 2, (a.y + c.y) / 2, target / view.s)
+      return
+    }
+    const d = drag.current
+    if (!d) return
+    const dx = e.clientX - d.x
+    const dy = e.clientY - d.y
+    d.x = e.clientX
+    d.y = e.clientY
+    if (view.s > 1) setView((v) => ({ ...v, x: v.x + dx, y: v.y + dy }))
+  }
+  const onPointerUp = (e: React.PointerEvent) => {
+    pointers.current.delete(e.pointerId)
+    if (pointers.current.size < 2) pinch.current = null
+    const d = drag.current
+    drag.current = null
+    if (d && view.s === 1) {
+      const dx = e.clientX - d.vx
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(e.clientY - d.vy)) step(dx < 0 ? 1 : -1)
+    }
+  }
+
+  if (!open || !b) return null
+  const ch = b.chapter >= 0 ? chapters[b.chapter] : null
 
   return (
-    <AnimatePresence>
-      {page !== null && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center px-6"
-          onClick={onClose}
-        >
+    <div
+      className="fixed inset-0 z-[58] bg-[#12110f] text-card flex flex-col transition-opacity duration-500"
+      style={{ opacity: visible ? 1 : 0 }}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Board ${b.page}: ${b.title}`}
+    >
+      <div className="flex items-center justify-between px-4 md:px-8 py-4 md:py-5">
+        <div className="flex items-baseline gap-4 min-w-0">
+          <span className="font-mono text-2xl md:text-3xl tabular-nums">{String(b.page).padStart(2, '0')}</span>
+          <div className="min-w-0">
+            <p className="eyebrow text-card/50 truncate">{ch ? `Collection ${ch.no} · ${ch.title} · ${ch.kicker}` : 'Fin'}</p>
+            <p className="text-[15px] md:text-[17px] truncate">{b.title}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 md:gap-3 shrink-0">
+          <span className="hidden md:inline eyebrow text-card/40 mr-2">Scroll or pinch to zoom · drag to pan</span>
+          <a
+            href={fullSrc(b.page)}
+            target="_blank"
+            rel="noopener"
+            className="hidden sm:inline-flex eyebrow rounded-full border border-card/25 px-3.5 py-2 hover:bg-card hover:text-ink transition-colors"
+          >
+            Full size ↗
+          </a>
           <button
+            ref={closeRef}
             onClick={onClose}
-            aria-label="Close"
-            className="liquid-glass rounded-full p-3 absolute top-6 right-6 text-white"
+            className="eyebrow rounded-full bg-card text-ink px-4 py-2 hover:bg-thread hover:text-card transition-colors"
           >
-            <X size={20} />
+            Close ✕
           </button>
+        </div>
+      </div>
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onNavigate(page === 1 ? galleryCount : page - 1)
-            }}
-            aria-label="Previous"
-            className="liquid-glass rounded-full p-3 absolute left-4 md:left-8 text-white"
-          >
-            <ChevronLeft size={20} />
-          </button>
+      <div
+        ref={stage}
+        className="relative flex-1 overflow-hidden touch-none select-none"
+        style={{ cursor: view.s > 1 ? 'grab' : 'zoom-in' }}
+        onWheel={onWheel}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        onDoubleClick={(e) => (view.s > 1 ? setView(ID) : zoomAt(e.clientX, e.clientY, 2.5))}
+      >
+        <div
+          className="absolute inset-0 grid place-items-center px-2 md:px-16"
+          style={{
+            transform: `translate3d(${view.x}px, ${view.y}px, 0) scale(${view.s})`,
+            transition: drag.current || pinch.current ? 'none' : 'transform 0.35s cubic-bezier(.2,.7,.1,1)',
+          }}
+        >
+          <div className="relative w-full max-h-full" style={{ aspectRatio: '7016 / 2482', maxWidth: 'min(100%, calc((100vh - 170px) * 2.8267))' }}>
+            <img
+              src={thumbSrc(b.page)}
+              alt=""
+              className="absolute inset-0 w-full h-full object-contain blur-[2px]"
+              draggable={false}
+            />
+            <img
+              key={b.page}
+              src={fullSrc(b.page)}
+              alt={`${b.title}, board ${b.page} of Shiwani Kumari's portfolio`}
+              onLoad={() => setLoaded(b.page)}
+              className="absolute inset-0 w-full h-full object-contain transition-opacity duration-500 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)]"
+              style={{ opacity: loaded === b.page ? 1 : 0 }}
+              draggable={false}
+            />
+          </div>
+        </div>
+      </div>
 
-          <motion.img
-            key={page}
-            src={fullSrc(page)}
-            alt={`Portfolio board ${page}`}
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.25 }}
-            className="max-w-full max-h-[85vh] rounded-2xl object-contain"
-            onClick={(e) => e.stopPropagation()}
+      <div className="flex items-center justify-between px-4 md:px-8 py-4 md:py-5">
+        <button onClick={() => step(-1)} className="eyebrow hover:text-thread transition-colors py-2">
+          ← Prev
+        </button>
+        <div className="flex-1 mx-6 md:mx-12 relative h-px bg-card/15">
+          <div
+            className="absolute left-0 top-0 h-[1.5px] bg-thread transition-all duration-500"
+            style={{ width: `${((index + 1) / boards.length) * 100}%` }}
           />
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onNavigate(page === galleryCount ? 1 : page + 1)
-            }}
-            aria-label="Next"
-            className="liquid-glass rounded-full p-3 absolute right-4 md:right-8 text-white"
+          <a
+            href={contact.portfolioPdf}
+            target="_blank"
+            rel="noopener"
+            className="hidden md:block absolute left-1/2 -translate-x-1/2 top-3 eyebrow text-card/40 hover:text-card"
           >
-            <ChevronRight size={20} />
-          </button>
-
-          <span className="absolute bottom-6 text-white/50 text-xs tracking-widest uppercase">
-            {page} / {galleryCount}
-          </span>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            Download full portfolio PDF
+          </a>
+        </div>
+        <button onClick={() => step(1)} className="eyebrow hover:text-thread transition-colors py-2">
+          Next →
+        </button>
+      </div>
+    </div>
   )
 }

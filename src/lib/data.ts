@@ -6,53 +6,263 @@ export const contact = {
   phoneHref: '+919570186369',
   linkedin: 'https://www.linkedin.com/in/shiwanikumari3',
   cv: '/Shiwani_CV.pdf',
-  portfolioPdf: '/Shiwani%20kumari.pdf',
+  portfolioPdf: '/Shiwani_Kumari_Portfolio.pdf',
 }
 
-export const heroVideo =
-  // 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260506_031045_0e1165dd-ab48-46e3-ad3d-5fe77f217647.mp4'
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260701_083907_581a119a-89b7-4c9f-a6ef-560625e0086f.mp4'
 export const brands = [
   'Puma',
+  'FC',
   'FCUK',
   'Myntra',
+  'Marks & Spencer',
   "Levi's",
   'Walmart',
+  'Milou',
   'MyTUK',
-  'Underlinen',
-  'Puffer',
 ]
+
+export type Chapter = {
+  no: string
+  title: string
+  kicker: string
+  description: string
+  from: number
+  to: number
+}
+
+export const chapters: Chapter[] = [
+  {
+    no: '01',
+    title: 'Amma',
+    kicker: 'Unisex infantwear · S/S',
+    description:
+      'An infantwear capsule for Mother’s Day, drawn from the bond between a mother and her little one. Hand illustrated characters and a Protect & Connect palette from WGSN × Coloro S/S 24.',
+    from: 2,
+    to: 6,
+  },
+  {
+    no: '02',
+    title: 'Knit Lab',
+    kicker: 'Weft knit development',
+    description:
+      'Swatches knitted and documented by hand: front bed, back bed, tuck and miss notation, loop length, gauge, GSM and the yarn behind every structure.',
+    from: 7,
+    to: 11,
+  },
+  {
+    no: '03',
+    title: 'Milou',
+    kicker: 'Care. The Swiss Way',
+    description:
+      'Kidswear for Milou, from print and appliqué artwork to finished sleepsuits, rompers and tees, through to the campaign.',
+    from: 12,
+    to: 16,
+  },
+  {
+    no: '04',
+    title: 'Ranges',
+    kicker: 'Kidswear line sheets',
+    description:
+      'Seasonal boys, girls and infant ranges, planned and flat drawn style by style across tops, bottoms, outerwear and sets.',
+    from: 17,
+    to: 21,
+  },
+  {
+    no: '05',
+    title: 'Sportswear',
+    kicker: 'Cycling training range · S/S 23',
+    description:
+      'A menswear training range designed to solve saddle sores. Fabric research, pencil development, colourways and complete tech packs for jerseys, bibs and jackets.',
+    from: 22,
+    to: 30,
+  },
+  {
+    no: '06',
+    title: 'Loungewear',
+    kicker: 'Soul Space · Super Comfy',
+    description:
+      'Menswear forecast boards translated into a soft, relaxed lounge line, with swatch boards, line-up and specification sheets.',
+    from: 31,
+    to: 35,
+  },
+  {
+    no: '07',
+    title: 'Graphics',
+    kicker: 'T-shirt artwork & colourways',
+    description:
+      'Original placement graphics, each developed into Pantone matched colour options and shown on garment.',
+    from: 36,
+    to: 43,
+  },
+  {
+    no: '08',
+    title: 'FCUK',
+    kicker: 'Style Clyde · sketch to shelf',
+    description:
+      'One style followed all the way: combos, sketch details, brand carrier artwork, neck tape, woven labels and the packaging trade pack.',
+    from: 44,
+    to: 47,
+  },
+  {
+    no: '09',
+    title: 'Performance',
+    kicker: 'Men’s training range · Health. Empower. You.',
+    description:
+      'Fifteen tech packed styles of tees, muscle tees, vests, shorts, joggers and trackpants in recycled polyester and mesh, each with construction notes, trims and colourways.',
+    from: 48,
+    to: 63,
+  },
+  {
+    no: '10',
+    title: 'Varsity',
+    kicker: 'AZORTE · Women’s capsule S/S 27',
+    description:
+      'A six look varsity capsule for AZORTE: WGSN research, mood and colour, design exploration, AI renders and tech packs, ending in a full collection overview.',
+    from: 64,
+    to: 76,
+  },
+  {
+    no: '11',
+    title: 'Theory',
+    kicker: 'Built for the city. Designed for movement.',
+    description:
+      'A capsule built around realistic line drafts and product innovation: modular pockets, articulated sleeves and convertible utility pieces with streetwear silhouettes.',
+    from: 77,
+    to: 82,
+  },
+]
+
+const titles: Record<number, string> = {
+  2: 'Kidswear',
+  3: 'Design brief',
+  4: 'Concept note',
+  5: 'Colour story & flats',
+  6: 'Character artwork',
+  7: 'Weft knitting notation',
+  8: 'SSJ1 single jersey · Spinel',
+  9: 'SSJ4 single jersey · Seashell',
+  10: 'SSJ4 with Lycra · Scarlet',
+  11: 'SR2 rib · Smithsonite',
+  12: 'Fox print sleepsuit',
+  13: 'Kangaroo pocket romper',
+  14: 'Appliqué romper',
+  15: '“Hi, I’m new here” romper',
+  16: 'Campaign',
+  17: 'Infant & toddler range',
+  18: 'Boys range',
+  19: 'Boys & infant girls',
+  20: 'Girls range I',
+  21: 'Girls range II',
+  22: 'Sportswear',
+  23: 'Brief · defining the problem',
+  24: 'Fabric research',
+  25: 'Mood & palette',
+  26: 'Development sketches',
+  27: 'Colourways',
+  28: 'Final kit line-up',
+  29: 'Tech packs I',
+  30: 'Tech packs II',
+  31: 'Loungewear',
+  32: 'Forecast boards',
+  33: 'Super Comfy · swatch board',
+  34: 'Collection line-up',
+  35: 'Specification sheets',
+  36: 'T-shirt graphics',
+  37: 'Locally Grown · Prioritize Your Peace',
+  38: 'Just Bloom',
+  39: 'Golden Rules for Happiness',
+  40: 'Exploration',
+  41: 'Perfectly Imperfect',
+  42: 'Good Vibes',
+  43: 'Indigenous',
+  44: 'Campaign',
+  45: 'Combos & sketch details',
+  46: 'Artwork & trim details',
+  47: 'Packaging instructions',
+  48: 'Brand & colour direction',
+  49: 'Training tee · HS-MTS-001',
+  50: 'Training tee · HS-MTS-002',
+  51: 'Training tee · HS-MTS-003',
+  52: 'Training tee · HS-MTS-004',
+  53: 'Muscle tee · HS-MMT-001',
+  54: 'Muscle tee · HS-MMT-002',
+  55: 'Training vest · HS-MMT-003',
+  56: 'Training shorts · HS-MSH-001',
+  57: 'Training shorts · HS-MSH-002',
+  58: 'Training shorts · HS-MSH-003',
+  59: 'Training shorts · HS-MSH-004',
+  60: 'Joggers · HS-MJG-001',
+  61: 'Trackpants · HS-MTP-001',
+  62: 'Joggers · HS-MJG-002',
+  63: 'Trackpants · HS-MTP-002',
+  64: 'Project brief',
+  65: 'Research & colour analysis',
+  66: 'Mood & colour board',
+  67: 'Concept & swatch board',
+  68: 'Exploration · cropped jersey',
+  69: 'Exploration · varsity jacket',
+  70: 'Exploration · Lucky Charming',
+  71: 'Exploration · team jersey',
+  72: 'Exploration · Be a Warrior',
+  73: 'Tech pack · raglan polo',
+  74: 'Tech pack · cargo shorts',
+  75: 'Tech pack · varsity jacket',
+  76: 'Collection overview',
+  77: 'Capsule concept',
+  78: 'Design features',
+  79: 'Functionality & everyday use',
+  80: 'Tech pack · utility cargo',
+  81: 'Tech pack · training tee',
+  82: 'Tech pack · utility jacket',
+  83: 'Thank you',
+}
+
+export type Board = {
+  page: number
+  title: string
+  chapter: number
+}
+
+export const boards: Board[] = Array.from({ length: 82 }, (_, k) => {
+  const page = k + 2
+  const chapter = chapters.findIndex((c) => page >= c.from && page <= c.to)
+  return { page, title: titles[page] ?? '', chapter }
+})
+
+export const BOARD_ASPECT = 7016 / 2482
+
+const pad = (n: number) => String(n).padStart(2, '0')
+export const thumbSrc = (page: number) => `/portfolio/thumb/p${pad(page)}.jpg`
+export const texSrc = (page: number) => `/portfolio/tex/p${pad(page)}.jpg`
+export const fullSrc = (page: number) => `/portfolio/full/p${pad(page)}.jpg`
 
 export const stats = [
   { metric: '4+', label: 'years in apparel product development' },
-  { metric: '9', label: 'brands including Puma, FCUK, Myntra, and Levi’s' },
-  { metric: '65', label: 'boards of collections, tech packs, and prints' },
+  { metric: '9', label: 'brands, from Puma to Walmart' },
+  { metric: '11', label: 'collections on the line' },
+  { metric: '82', label: 'boards of research, design and tech packs' },
 ]
 
 export const process = [
   {
-    number: '01',
+    no: '01',
     title: 'Discover',
-    description:
-      'Trend research, competitor scans, and customer insight distilled into a clear seasonal direction.',
+    body: 'Trend research, competitor scans and customer insight distilled into a clear seasonal direction.',
   },
   {
-    number: '02',
+    no: '02',
     title: 'Design',
-    description:
-      'Moodboards, color stories, original prints, and silhouettes sketched into a cohesive collection story.',
+    body: 'Moodboards, colour stories, original prints and silhouettes sketched into one collection story.',
   },
   {
-    number: '03',
+    no: '03',
     title: 'Develop',
-    description:
-      'Technical flats, measurement charts, construction detail, and fit reviews through every sample round.',
+    body: 'Technical flats, measurement charts, construction detail and fit reviews through every sample round.',
   },
   {
-    number: '04',
+    no: '04',
     title: 'Deliver',
-    description:
-      'Vendor coordination, fabric and trim sourcing, and final production approval for the retail floor.',
+    body: 'Vendor coordination, fabric and trim sourcing, and final production approval for the retail floor.',
   },
 ]
 
@@ -66,6 +276,7 @@ export const capabilities = [
   'Tech Packs',
   'Technical Flats',
   'Print & Graphic Development',
+  'Fashion Illustration',
   'Fabric & Trim Sourcing',
   'Sample Development',
   'Fit Review',
@@ -73,62 +284,25 @@ export const capabilities = [
   'Production Coordination',
 ]
 
+export const tools = ['Illustrator', 'Photoshop', 'InDesign', 'Excel', 'PowerPoint']
+
 export const experience = [
   {
-    period: 'Apr 2025 to Present',
-    title: 'Design and Development Lead',
+    period: 'Apr 2025 — Present',
+    title: 'Design & Development Lead',
     org: 'MyTUK',
-    description:
-      'Leads end to end knitwear, sportswear, and lifestyle apparel development from concept through production, including trend research, tech packs, sampling, fit approval, sourcing, buyer presentations, and production coordination.',
+    body: 'Leads end to end knitwear, sportswear and lifestyle development, from trend research and tech packs to sampling, fit approval, sourcing, buyer presentations and production.',
   },
   {
-    period: 'Sep 2024 to Apr 2025',
+    period: 'Sep 2024 — Apr 2025',
     title: 'Design & Product Executive',
     org: 'Underlinen Fashion House',
-    description:
-      'Owned kidswear development for Milou Swish and contributed across FC, FCUK, and Puma, translating trend and competitor analysis into seasonal palettes, graphics, tech packs, fit reviews, and product ready for production.',
+    body: 'Owned kidswear development for Milou Swish and contributed to FC, FCUK and Puma: palettes, graphics, tech packs, fit reviews and sustainable product development.',
   },
   {
-    period: 'Apr 2023 to Sep 2024',
+    period: 'Apr 2023 — Sep 2024',
     title: 'Designer',
     org: 'Puffer Fashion Business Services',
-    description:
-      'Designed kidswear collections for FC, FCUK, and Myntra, developing original prints, moodboards, color stories, fabric trims, and ranges ready for retail across back to back seasons.',
+    body: 'Designed kidswear collections for FC, FCUK and Myntra across back to back seasons, building original prints, moodboards, colour stories and retail ready ranges.',
   },
 ]
-
-export const selectedWork = [
-  {
-    page: 4,
-    tag: 'Kidswear · Walmart',
-    title: 'Wonder Nation Brand Board',
-    description:
-      'A kid centric brand board built for adventure, sized 0 to 18, designed for comfort that survives wear after wear and wash after wash.',
-  },
-  {
-    page: 30,
-    tag: 'Sportswear · Cycling',
-    title: 'Performance Cycling Kit',
-    description:
-      'Technical jerseys and bibs engineered for fit and function, developed panel by panel from flat sketch to finished kit.',
-  },
-  {
-    page: 60,
-    tag: 'Graphics · Print Development',
-    title: 'Indigenous Print Story',
-    description:
-      'An original graphic language taken through four colorways, from Pantone selection to placement on the finished garment.',
-  },
-]
-
-export const galleryHighlights = [1, 4, 10, 20, 30, 45, 60, 62]
-
-export const galleryCount = 65
-
-export function thumbSrc(page: number) {
-  return `/portfolio/thumb/page-${String(page).padStart(2, '0')}.jpg`
-}
-
-export function fullSrc(page: number) {
-  return `/portfolio/full/page-${String(page).padStart(2, '0')}.jpg`
-}
