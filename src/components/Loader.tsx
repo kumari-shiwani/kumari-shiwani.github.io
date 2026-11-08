@@ -132,7 +132,7 @@ export default function Loader({ progress, ready }: { progress: number; ready: b
 
       <div className="relative flex justify-between eyebrow text-muted">
         <span>
-          Shiwani Kumari<span className="hidden md:inline"> — Sportswear & Knitwear</span>
+          Shiwani Kumari<span className="hidden sm:inline"> — Sportswear & Knitwear</span>
         </span>
         <span>Portfolio 2026</span>
       </div>
@@ -161,9 +161,26 @@ export default function Loader({ progress, ready }: { progress: number; ready: b
 
         <div className="md:col-span-5 order-1 md:order-2 flex justify-center">
           <div className="relative w-[62vw] md:w-[26vw] max-w-[380px]">
-            <span className="absolute -top-7 left-0 eyebrow text-ink/60 !text-[9.5px]">
-              Swatch SSJ-01 · single jersey · {COLS} × {ROWS}
+            <span className="absolute -top-7 left-0 eyebrow text-ink/60 !text-[9.5px] whitespace-nowrap">
+              Swatch SSJ-01<span className="hidden md:inline"> · single jersey · {COLS} × {ROWS}</span>
             </span>
+            {/* phones: the red thread runs in from the left edge and drops onto the swatch */}
+            <svg
+              viewBox="0 0 300 100"
+              preserveAspectRatio="none"
+              className="md:hidden [@media(max-height:700px)]:hidden absolute right-[18%] bottom-full translate-y-6 w-[78vw] h-24 overflow-visible pointer-events-none"
+              aria-hidden
+            >
+              <path
+                d="M0 25 C 75 0, 135 75, 210 45 S 297 20, 300 100"
+                fill="none"
+                stroke="#c8302a"
+                strokeWidth="1.6"
+                pathLength={1}
+                strokeDasharray="1 2"
+                strokeDashoffset={1 - Math.min(1, shown * 1.6)}
+              />
+            </svg>
             <Swatch shown={shown} />
             <span className="absolute -bottom-7 right-0 eyebrow text-ink/60 !text-[9.5px] tabular-nums">
               Row {String(Math.min(ROWS, Math.floor(shown * ROWS) + 1)).padStart(2, '0')} / {ROWS}
@@ -178,13 +195,13 @@ export default function Loader({ progress, ready }: { progress: number; ready: b
           <p key={current} className="fade-swap font-serif text-2xl md:text-3xl whitespace-nowrap">
             <span className="font-mono text-thread text-base md:text-lg mr-3">{chapters[current].no}</span>
             {chapters[current].title}
-            <span className="hidden md:inline eyebrow text-muted ml-4">{chapters[current].kicker}</span>
+            <span className="block md:inline eyebrow text-muted md:ml-4 mt-1 md:mt-0 !text-[9.5px] md:!text-[inherit]">{chapters[current].kicker}</span>
           </p>
-          <div className="hidden md:flex gap-1.5 mt-4" aria-hidden>
+          <div className="flex gap-1 md:gap-1.5 mt-4 w-[52vw] md:w-auto" aria-hidden>
             {chapters.map((c, i) => (
               <span
                 key={c.no}
-                className="h-[3px] w-8 transition-colors duration-500"
+                className="h-[3px] flex-1 md:flex-none md:w-8 transition-colors duration-500"
                 style={{ background: i <= current ? '#c8302a' : 'rgba(23,21,18,.14)' }}
               />
             ))}

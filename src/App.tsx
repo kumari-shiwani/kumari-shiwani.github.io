@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Engine } from './three/Engine'
-import { boardS, chapterS, scrollForS, trackHeightVh } from './three/layout'
+import { boardS, chapterS, scrollForS, sForProgress, trackHeightVh } from './three/layout'
 import { boards } from './lib/data'
 import Loader from './components/Loader'
 import Header from './components/Header'
@@ -14,6 +14,7 @@ import Sections from './components/Sections'
 import Fallback from './components/Fallback'
 import IntroStages from './components/IntroStages'
 import { useZone } from './lib/useZone'
+import { useSlide } from './lib/useSlide'
 
 function webglOK() {
   try {
@@ -40,6 +41,7 @@ export default function App() {
   const [indexMode, setIndexMode] = useState(false)
   const [introStage, setIntroStage] = useState(-1)
   const zone = useZone()
+  useSlide(canvasRef, gl && ready && !indexMode && open === null)
 
   useEffect(() => {
     if (!gl || !canvasRef.current) return
@@ -79,6 +81,24 @@ export default function App() {
   const goToBoard = useCallback((i: number) => {
     window.scrollTo({ top: scrollForS(boardS[i]), behavior: 'smooth' })
   }, [])
+  /** next / previous board from wherever the line is, including the gaps between collections */
+  const step = useCallback(
+    (d: number) => {
+      let i = focus + d
+      if (focus < 0) {
+        const wk = document.getElementById('work')
+        if (!wk) return
+        const p = Math.min(1, Math.max(0, (window.scrollY - wk.offsetTop) / Math.max(1, wk.offsetHeight - window.innerHeight)))
+        const s = sForProgress(p)
+        i = -1
+        if (d > 0) i = boardS.findIndex((b) => b > s + 0.01)
+        else for (let k = boardS.length - 1; k >= 0; k--) if (boardS[k] < s - 0.01) { i = k; break }
+        if (i < 0) i = d > 0 ? boardS.length - 1 : 0
+      }
+      goToBoard(Math.max(0, Math.min(boards.length - 1, i)))
+    },
+    [focus, goToBoard],
+  )
   const goToChapter = useCallback((c: number) => {
     window.scrollTo({ top: scrollForS(chapterS[c]), behavior: 'smooth' })
   }, [])
@@ -101,18 +121,18 @@ export default function App() {
       if (zone === 'track' && !indexMode) {
         if (e.key === 'ArrowRight') {
           e.preventDefault()
-          goToBoard(Math.min(boards.length - 1, focus < 0 ? 0 : focus + 1))
+          step(1)
         }
         if (e.key === 'ArrowLeft') {
           e.preventDefault()
-          goToBoard(Math.max(0, focus < 0 ? 0 : focus - 1))
+          step(-1)
         }
         if (e.key === 'Enter' && focus >= 0) setOpen(focus)
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open, indexMode, zone, focus, toggleIndex, goToBoard])
+  }, [open, indexMode, zone, focus, toggleIndex, step])
 
   return (
     <>
@@ -133,6 +153,7 @@ export default function App() {
             progressRef={progressRef}
             onChapter={goToChapter}
             onOpen={() => focus >= 0 && setOpen(focus)}
+            onStep={step}
           />
           <IndexOverlay show={indexMode} hover={hover} onClose={() => setIndexMode(false)} />
           <Cursor hover={hover} indexMode={indexMode} />

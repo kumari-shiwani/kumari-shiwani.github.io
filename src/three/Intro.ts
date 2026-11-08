@@ -153,7 +153,7 @@ export class Intro {
     const portrait = aspect < 1
     const dist = 6.2
     const vis = 2 * dist * Math.tan(THREE.MathUtils.degToRad(18))
-    const scale = 0.82 * Math.min(1, (vis * aspect * (portrait ? 0.92 : 0.46)) / 3.6, (vis * 0.66) / 2.9)
+    const scale = 0.82 * Math.min(1, (vis * aspect * (portrait ? 0.8 : 0.46)) / 3.6, (vis * 0.66) / 2.9)
     this.group.position
       .copy(pos)
       .addScaledVector(fwd, dist)

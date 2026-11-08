@@ -30,7 +30,7 @@ export default function IntroStages({ stage }: { stage: number }) {
       style={{ opacity: on ? 1 : 0 }}
       aria-live="polite"
     >
-      <div className="absolute left-4 right-4 bottom-6 md:left-8 md:right-auto md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:max-w-[34rem]">
+      <div className="absolute left-4 right-4 bottom-6 md:left-8 md:right-8 md:bottom-10 land:right-auto land:bottom-auto land:top-1/2 land:-translate-y-1/2 land:max-w-[34rem]">
         <p className="eyebrow text-thread mb-4 md:mb-6">How a collection is made</p>
         {s && (
           <div key={stage} className="fade-swap">
@@ -38,7 +38,7 @@ export default function IntroStages({ stage }: { stage: number }) {
               <span className="font-mono text-[15px] md:text-[18px] text-muted tabular-nums">0{stage + 1}</span>
               <span className="eyebrow text-muted">{s.tag}</span>
             </div>
-            <h2 className="font-serif italic text-[min(22vw,13vh)] md:text-[min(9.5vw,17vh)] leading-[0.85] tracking-[-0.03em] mt-1">
+            <h2 className="font-serif italic text-[min(22vw,13vh)] land:text-[min(9.5vw,17vh)] leading-[0.85] tracking-[-0.03em] mt-1">
               {s.word}
             </h2>
             <p className="text-[14.5px] md:text-[16px] leading-relaxed mt-3 md:mt-6 max-w-sm text-ink/80 [@media(max-height:500px)]:hidden">{s.body}</p>

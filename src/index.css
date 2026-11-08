@@ -8,10 +8,12 @@
     color: #171512;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-x: none;
   }
   body {
     @apply bg-paper text-ink font-sans;
     overflow-x: hidden;
+    overscroll-behavior-x: none;
   }
   body.locked {
     overflow: hidden;

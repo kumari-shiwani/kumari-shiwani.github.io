@@ -174,7 +174,7 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
             href={fullSrc(b.page)}
             target="_blank"
             rel="noopener"
-            className="hidden sm:inline-flex eyebrow rounded-full border border-card/25 px-3.5 py-2 hover:bg-card hover:text-ink transition-colors"
+            className="inline-flex eyebrow rounded-full border border-card/25 px-3 md:px-3.5 py-2 hover:bg-card hover:text-ink transition-colors whitespace-nowrap"
           >
             Full size ↗
           </a>
@@ -240,16 +240,17 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
             className="absolute left-0 top-0 h-[1.5px] bg-thread transition-all duration-500"
             style={{ width: `${((index + 1) / boards.length) * 100}%` }}
           />
-          <span className="hidden [@media(hover:none)]:block absolute left-1/2 -translate-x-1/2 top-3 eyebrow !text-[9px] text-card/45 whitespace-nowrap">
+          <span className="hidden [@media(hover:none)]:block absolute left-1/2 -translate-x-1/2 -top-6 eyebrow !text-[9px] text-card/45 whitespace-nowrap">
             Drag to read · pinch to zoom
           </span>
           <a
             href={contact.portfolioPdf}
             target="_blank"
             rel="noopener"
-            className="hidden md:block [@media(hover:none)]:!hidden absolute left-1/2 -translate-x-1/2 top-3 eyebrow text-card/40 hover:text-card"
+            className="absolute left-1/2 -translate-x-1/2 top-3 eyebrow text-card/40 hover:text-card whitespace-nowrap max-md:!text-[9px]"
           >
-            Download full portfolio PDF
+            <span className="md:hidden">Portfolio PDF ↓</span>
+            <span className="hidden md:inline">Download full portfolio PDF</span>
           </a>
         </div>
         <button onClick={() => step(1)} className="eyebrow hover:text-thread transition-colors py-3 pl-3">

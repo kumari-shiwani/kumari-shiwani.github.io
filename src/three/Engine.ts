@@ -8,6 +8,7 @@ import {
   chapterS,
   chapterAt,
   dzOf,
+  GAP,
   nearestBoard,
   sForProgress,
   S_END,
@@ -86,6 +87,13 @@ export class Engine {
   private pointerSpeed = 0
   private hovered: number | null = null
   private pointerIsTouch = false
+  /** a finger on the glass plays the role of the laptop cursor */
+  private touchActive = false
+  private touchOnCanvas = false
+  /** camera sway: the mouse on a laptop, the finger (or a slow breath) on touch screens */
+  private par = new THREE.Vector2()
+  /** touch screens have no resting cursor, so an air current plays its part */
+  private touchDevice = window.matchMedia('(hover: none)').matches
   private overCanvas = false
   private clientX = -1
   private clientY = -1
@@ -133,7 +141,7 @@ export class Engine {
     private ev: EngineEvents,
   ) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' })
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, window.innerWidth < 800 ? 1.75 : 2))
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.setSize(window.innerWidth, window.innerHeight, false)
     this.renderer.setClearColor(PAPER)
     this.anisotropy = Math.min(8, this.renderer.capabilities.getMaxAnisotropy())
@@ -556,6 +564,24 @@ export class Engine {
     this.dragging = false
   }
 
+  private onTouch = (e: TouchEvent) => {
+    const t = e.touches[0]
+    if (!t) return
+    this.pointerIsTouch = true
+    this.touchActive = true
+    this.touchOnCanvas = e.target === this.canvas
+    this.clientX = t.clientX
+    this.clientY = t.clientY
+    const nx = (t.clientX / window.innerWidth) * 2 - 1
+    const ny = -(t.clientY / window.innerHeight) * 2 + 1
+    if (e.type === 'touchmove') this.pointerSpeed = Math.min(1.5, this.pointerSpeed + Math.hypot(nx - this.pointer.x, ny - this.pointer.y) * 6)
+    this.pointer.set(nx, ny)
+    this.pointerN.set(nx, ny)
+  }
+  private onTouchEnd = (e: TouchEvent) => {
+    if (e.touches.length === 0) this.touchActive = false
+  }
+
   private onWheel = (e: WheelEvent) => {
     if (this.indexTarget !== 1) return
     e.preventDefault()
@@ -570,6 +596,10 @@ export class Engine {
     window.addEventListener('pointerup', this.onPointerUp)
     window.addEventListener('pointercancel', this.onPointerCancel)
     window.addEventListener('wheel', this.onWheel, { passive: false })
+    window.addEventListener('touchstart', this.onTouch, { passive: true })
+    window.addEventListener('touchmove', this.onTouch, { passive: true })
+    window.addEventListener('touchend', this.onTouchEnd, { passive: true })
+    window.addEventListener('touchcancel', this.onTouchEnd, { passive: true })
   }
 
   private pick(): number | null {
@@ -640,10 +670,14 @@ export class Engine {
   private targetS() {
     const raw = sForProgress(this.progress)
     const idle = performance.now() - this.lastScrollTime > 160
-    if (!idle || this.progress <= 0 || this.progress >= 1) return raw
+    if (!idle || this.progress >= 1) return raw
+    if (this.progress <= 0 && this.computeHeroT() < 1) return raw
+    // at rest the camera always settles on something: a board, or a collection title in the gap
     const { index, dist } = nearestBoard(raw)
-    if (dist < W * 0.42) return boardS[index]
-    return raw
+    if (dist < (W + GAP) / 2 + 0.05) return boardS[index]
+    let c = 0
+    for (let i = 1; i < chapterS.length; i++) if (Math.abs(chapterS[i] - raw) < Math.abs(chapterS[c] - raw)) c = i
+    return Math.abs(chapterS[c] - raw) < 3.5 ? chapterS[c] : raw
   }
 
   private trackCamera(s: number, pos: THREE.Vector3, look: THREE.Vector3) {
@@ -651,20 +685,20 @@ export class Engine {
     const vfov = THREE.MathUtils.degToRad(this.camera.fov)
     const hfov = 2 * Math.atan(Math.tan(vfov / 2) * aspect)
     const portrait = aspect < 1
-    const want = portrait ? W * 1.1 : W * 1.5
+    const want = portrait ? W * 1.32 : W * 1.5
     const dist = clamp(want / 2 / Math.tan(hfov / 2), 3.1, 12)
     const p = P(s)
     p.y -= 0.5
     const t = T(s)
     const n = N(s)
-    const px = this.pointerIsTouch ? 0 : this.pointerN.x
-    const py = this.pointerIsTouch ? 0 : this.pointerN.y
+    const px = this.par.x
+    const py = this.par.y
     pos
       .copy(p)
       .addScaledVector(n, dist)
-      .addScaledVector(t, -dist * (portrait ? 0.07 : 0.3) + px * 0.25)
+      .addScaledVector(t, -dist * (portrait ? 0.16 : 0.3) + px * 0.25)
     pos.y += 0.16 + py * 0.14
-    look.copy(p).addScaledVector(t, dist * (portrait ? 0.02 : 0.09))
+    look.copy(p).addScaledVector(t, dist * (portrait ? 0.05 : 0.09))
     look.y -= 0.02
   }
 
@@ -674,14 +708,15 @@ export class Engine {
     const n = N(s)
     const t = T(s)
     const portrait = this.camera.aspect < 1
-    look.copy(P(s + (portrait ? 7 : 8.5)))
-    look.y -= portrait ? 1.9 : 1.05
+    // portrait keeps the laptop's receding diagonal, just pulled back to fit the narrow frame
+    look.copy(P(s + (portrait ? 9.5 : 8.5)))
+    look.y -= portrait ? 1.7 + clamp(this.camera.aspect - 0.46, 0, 0.16) * 4 : 1.05
     pos
       .copy(p)
-      .addScaledVector(n, portrait ? 11 : 7.2)
-      .addScaledVector(t, portrait ? -1 : -4.2)
-    pos.y += 1.3 + this.pointerN.y * 0.25
-    pos.x += this.pointerN.x * 0.4
+      .addScaledVector(n, portrait ? 9.5 : 7.2)
+      .addScaledVector(t, portrait ? -3.4 : -4.2)
+    pos.y += 1.3 + this.par.y * 0.25
+    pos.x += this.par.x * 0.4
     if (this.introT > 0) {
       const f = look.clone().sub(pos).normalize()
       pos.addScaledVector(f, Math.sin(Math.min(1, this.introT) * Math.PI * 0.5) * 0.9)
@@ -730,6 +765,12 @@ export class Engine {
     this.heroT = damp(this.heroT, this.computeHeroT(), 5, dt)
     this.introT = damp(this.introT, this.computeIntroT(), 4, dt)
     if (Math.abs(this.introT - this.computeIntroT()) < 0.0005) this.introT = this.computeIntroT()
+    if (this.pointerIsTouch) {
+      // finger drives the sway while it is down; otherwise a slow breath, like a resting mouse
+      const tx = this.touchActive ? this.pointerN.x * 0.25 : Math.sin(time * 0.21) * 0.3
+      const ty = this.touchActive ? this.pointerN.y * 0.25 : Math.sin(time * 0.15 + 1) * 0.2
+      this.par.set(damp(this.par.x, tx, 1.6, dt), damp(this.par.y, ty, 1.6, dt))
+    } else this.par.copy(this.pointerN)
     const target = this.targetS()
     this.sCam = damp(this.sCam, target, this.indexTarget ? 12 : 3.4, dt)
     const vel = (this.sCam - this.sPrevCam) / Math.max(dt, 1e-4)
@@ -789,10 +830,19 @@ export class Engine {
     }
     let hov: number | null = null
     if (!this.pointerIsTouch && !this.dragging && this.overCanvas) hov = this.pick()
+    else if ((this.touchDevice || this.pointerIsTouch) && im > 0.9) {
+      // no hover on glass: in the archive the board facing you is the one that gets named
+      const keep = this.pointer.clone()
+      this.pointer.set(0, -0.05)
+      hov = this.pick()
+      this.pointer.copy(keep)
+    }
     if (hov !== this.hovered) {
       this.hovered = hov
       this.ev.onHover(hov)
     }
+    // the cloth answers a finger exactly as it answers the cursor (without the hover UI)
+    const felt = hov ?? (this.pointerIsTouch && this.touchActive && this.touchOnCanvas && im < 0.5 ? this.pick() : null)
     this.pointerSpeed = damp(this.pointerSpeed, 0, 3, dt)
 
     // the line steps aside while the knitting act plays
@@ -802,6 +852,13 @@ export class Engine {
     pegMat.transparent = lineOp < 0.999
     pegMat.opacity = lineOp
     this.pegs.visible = lineOp > 0.01
+
+    // air current (touch screens): a gusting breeze on every board, and on the board in
+    // front a slow drifting ripple with a breathing lift, as a resting laptop cursor gives
+    const airOn = (this.touchDevice || this.pointerIsTouch) && !(this.touchActive && felt !== null)
+    const calm = this.reduced ? 0.3 : 1
+    const breeze = airOn ? (0.12 * Math.sin(time * 0.23) + 0.4 * Math.max(0, Math.sin(time * 0.33)) ** 2 + 0.12) * calm : 0
+    const airI = airOn && this.heroT > 0.6 && im < 0.5 ? this.focus : -1
 
     // boards
     let pegI = 0
@@ -821,16 +878,20 @@ export class Engine {
       const speed = m.position.distanceTo(b.prevPos) / Math.max(dt, 1e-4)
       b.prevPos.copy(m.position)
 
-      const isH = hov === i
-      b.hover = damp(b.hover, isH ? 1 : 0, 6, dt)
-      b.force = damp(b.force, isH ? 0.35 + Math.min(this.pointerSpeed, 1) * 0.9 : 0, isH ? 5 : 2, dt)
+      const isH = felt === i
+      const isAir = !isH && i === airI
+      if (isAir) u.uPointer.value.set(Math.sin(time * 0.41 + i) * 0.3 * W, -0.45 + Math.sin(time * 0.57) * 0.22)
+      const hT = isH ? 1 : isAir ? 0.8 + 0.2 * Math.sin(time * 0.8) : 0
+      const fT = isH ? 0.35 + Math.min(this.pointerSpeed, 1) * 0.9 : isAir ? 0.65 + 0.25 * Math.sin(time * 1.1) : 0
+      b.hover = damp(b.hover, hT, isAir ? 2 : 6, dt)
+      b.force = damp(b.force, fT, isH ? 5 : 2, dt)
 
       u.uOpacity.value = lineOp
       const bm = m.material as THREE.ShaderMaterial
       bm.transparent = lineOp < 0.999
       m.visible = lineOp > 0.01
       u.uTime.value = time
-      u.uWind.value = this.wind * (1 - e)
+      u.uWind.value = (this.wind + breeze) * (1 - e)
       u.uFlutter.value = Math.min(speed * 0.06, 1.4)
       u.uHover.value = b.hover
       u.uPointerForce.value = this.reduced ? b.force * 0.3 : b.force
@@ -920,14 +981,16 @@ export class Engine {
       }
       const x = (v.x * 0.5 + 0.5) * window.innerWidth
       const y = (-v.y * 0.5 + 0.5) * window.innerHeight
-      const sc = clamp(4.2 / d, 0.15, 1.6) * clamp(window.innerHeight / 900, 0.5, 1.15)
+      // long titles ("Sportswear") are wider than the label box: fit the real text width
+      const tw = Math.max(544, (el.firstElementChild?.children[1] as HTMLElement | undefined)?.scrollWidth ?? 544)
+      const sc = Math.min(clamp(4.2 / d, 0.15, 1.6) * clamp(window.innerHeight / 900, 0.5, 1.15) * (this.camera.aspect < 1 ? 1.4 : 1), (window.innerWidth * 0.9) / tw)
       const op = (1 - THREE.MathUtils.smoothstep(d, 9, 20)) * (1 - im) * THREE.MathUtils.smoothstep(this.heroT, 0.7, 0.98)
       el.style.visibility = op > 0.01 ? 'visible' : 'hidden'
       el.style.opacity = String(op)
       el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%) scale(${sc.toFixed(3)})`
     })
 
-    if (this.progressEl) this.progressEl.style.transform = `scaleY(${this.progress.toFixed(4)})`
+    if (this.progressEl) this.progressEl.style.setProperty('--p', this.progress.toFixed(4))
 
     this.renderer.render(this.scene, this.camera)
   }
@@ -942,6 +1005,10 @@ export class Engine {
     window.removeEventListener('pointerup', this.onPointerUp)
     window.removeEventListener('pointercancel', this.onPointerCancel)
     window.removeEventListener('wheel', this.onWheel)
+    window.removeEventListener('touchstart', this.onTouch)
+    window.removeEventListener('touchmove', this.onTouch)
+    window.removeEventListener('touchend', this.onTouchEnd)
+    window.removeEventListener('touchcancel', this.onTouchEnd)
     this.boards.forEach((b) => {
       b.thumb?.dispose()
       b.hi?.dispose()

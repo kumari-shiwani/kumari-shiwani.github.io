@@ -49,7 +49,7 @@ export default function HeroOverlay({ ready }: { ready: boolean }) {
           className="md:col-span-4 md:pb-[2.2vw] flex flex-col gap-6"
           style={{ animation: 'fadeSwap 1s cubic-bezier(.2,.7,.1,1) 2s both', ...play }}
         >
-          <p className="text-[15px] md:text-[16px] leading-relaxed max-w-sm">
+          <p className="text-[15px] md:text-[16px] leading-relaxed max-w-sm [@media(max-height:500px)]:hidden">
             Four years taking garments from the first moodboard to the production floor for Puma, FCUK,
             Myntra, Levi’s, Walmart and Milou. Eleven collections, hung on a single red thread.
           </p>
@@ -58,9 +58,10 @@ export default function HeroOverlay({ ready }: { ready: boolean }) {
               <span className="absolute inset-0 bg-thread" style={{ animation: 'drop 2.2s cubic-bezier(.7,0,.2,1) infinite' }} />
             </span>
             <span className="eyebrow">
-              Scroll to walk the line
+              Scroll or slide to walk the line
               <br />
               <span className="text-muted [@media(hover:none)]:hidden">or press I for the index</span>
+              <span className="text-muted hidden [@media(hover:none)]:inline">or tap Index for the archive</span>
             </span>
           </div>
         </div>

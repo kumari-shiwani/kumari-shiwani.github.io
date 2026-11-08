@@ -19,6 +19,7 @@ function useReveal<T extends HTMLElement>() {
           const n = en.target as HTMLElement
           n.style.opacity = '1'
           n.style.transform = 'none'
+          n.classList.add('seen')
           io.unobserve(n)
         }),
       { rootMargin: '0px 0px -12% 0px' },
@@ -112,7 +113,7 @@ export default function Sections() {
                 </div>
                 <h3 className="font-serif italic text-5xl xl:text-6xl mt-6 md:mt-8">{p.title}</h3>
                 <p className="text-[15px] leading-relaxed text-ink/75 mt-4 max-w-xs">{p.body}</p>
-                <div className="stitch text-thread absolute left-0 right-8 bottom-4 scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-700" />
+                <div className="stitch text-thread absolute left-0 right-8 bottom-4 scale-x-0 origin-left group-hover:scale-x-100 [@media(hover:none)]:group-[.seen]:scale-x-100 [@media(hover:none)]:delay-700 transition-transform duration-700" />
               </article>
             ))}
           </div>
@@ -171,7 +172,7 @@ export default function Sections() {
                   <p className="eyebrow text-thread mt-3">{x.title}</p>
                 </div>
                 <p className="md:col-span-5 text-[15px] leading-relaxed text-ink/75">{x.body}</p>
-                <span className="absolute left-0 bottom-[-1px] h-[1.5px] w-full bg-thread scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-700" />
+                <span className="absolute left-0 bottom-[-1px] h-[1.5px] w-full bg-thread scale-x-0 origin-left group-hover:scale-x-100 [@media(hover:none)]:group-[.seen]:scale-x-100 [@media(hover:none)]:delay-500 [@media(hover:none)]:duration-1000 transition-transform duration-700" />
               </article>
             ))}
           </div>

@@ -4,6 +4,10 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      screens: {
+        // wide AND landscape: tablets held upright use the stacked phone layout
+        land: { raw: '(min-width: 768px) and (orientation: landscape)' },
+      },
       colors: {
         paper: '#ebe6db',
         card: '#f4f0e8',
