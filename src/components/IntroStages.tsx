@@ -38,10 +38,10 @@ export default function IntroStages({ stage }: { stage: number }) {
               <span className="font-mono text-[15px] md:text-[18px] text-muted tabular-nums">0{stage + 1}</span>
               <span className="eyebrow text-muted">{s.tag}</span>
             </div>
-            <h2 className="font-serif italic text-[22vw] md:text-[9.5vw] leading-[0.85] tracking-[-0.03em] mt-1">
+            <h2 className="font-serif italic text-[min(22vw,13vh)] md:text-[min(9.5vw,17vh)] leading-[0.85] tracking-[-0.03em] mt-1">
               {s.word}
             </h2>
-            <p className="text-[14.5px] md:text-[16px] leading-relaxed mt-4 md:mt-6 max-w-sm text-ink/80">{s.body}</p>
+            <p className="text-[14.5px] md:text-[16px] leading-relaxed mt-3 md:mt-6 max-w-sm text-ink/80 [@media(max-height:500px)]:hidden">{s.body}</p>
           </div>
         )}
         <ol className="flex gap-2 mt-6 md:mt-10" aria-hidden>

@@ -9,7 +9,11 @@ export default function Header({ indexMode, onIndex, gl, zone }: Props) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
   }
   return (
-    <header className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-4 md:px-8 py-4 md:py-5 pointer-events-none">
+    <header
+      className={`fixed top-0 inset-x-0 z-50 flex items-center justify-between px-4 md:px-8 py-3 md:py-5 pointer-events-none transition-[background-color,box-shadow] duration-500 ${
+        zone === 'after' ? 'bg-card/85 backdrop-blur-md shadow-[0_1px_0_rgba(23,21,18,0.08)]' : ''
+      }`}
+    >
       <a
         href="#top"
         onClick={(e) => {

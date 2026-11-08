@@ -11,6 +11,7 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
   const [loaded, setLoaded] = useState<number | null>(null)
   const [visible, setVisible] = useState(false)
   const stage = useRef<HTMLDivElement>(null)
+  const frame = useRef<HTMLDivElement>(null)
   const drag = useRef<{ x: number; y: number; vx: number; vy: number } | null>(null)
   const pointers = useRef(new Map<number, { x: number; y: number }>())
   const pinch = useRef<{ d: number; s: number } | null>(null)
@@ -31,7 +32,38 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
     }
   }, [open])
 
-  useEffect(() => setView(ID), [index])
+  /** keep the board on screen while panning */
+  const bound = useCallback((v: View): View => {
+    const st = stage.current
+    const fr = frame.current
+    if (!st || !fr || v.s <= 1.001) return ID
+    const mx = Math.max(0, (fr.offsetWidth * v.s - st.clientWidth) / 2 + 12)
+    const my = Math.max(0, (fr.offsetHeight * v.s - st.clientHeight) / 2 + 12)
+    return { s: v.s, x: Math.min(mx, Math.max(-mx, v.x)), y: Math.min(my, Math.max(-my, v.y)) }
+  }, [])
+
+  /** on portrait phones a wide board opens tall enough to read, starting at its left edge */
+  const fit = useCallback((): View => {
+    const st = stage.current
+    const fr = frame.current
+    if (!st || !fr) return ID
+    if (st.clientHeight < st.clientWidth * 0.9) return ID
+    const s = Math.min(4, (st.clientHeight * 0.7) / fr.offsetHeight)
+    if (s <= 1.05) return ID
+    return bound({ s, x: 1e6, y: 0 })
+  }, [bound])
+
+  useEffect(() => {
+    setView(ID)
+    if (index === null) return
+    const r = requestAnimationFrame(() => setView(fit()))
+    const onResize = () => setView(fit())
+    window.addEventListener('resize', onResize)
+    return () => {
+      cancelAnimationFrame(r)
+      window.removeEventListener('resize', onResize)
+    }
+  }, [index, fit])
 
   const step = useCallback(
     (d: number) => {
@@ -64,7 +96,7 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
       const s = Math.min(6, Math.max(1, v.s * factor))
       if (s === 1) return ID
       const k = s / v.s
-      return { s, x: px - (px - v.x) * k, y: py - (py - v.y) * k }
+      return bound({ s, x: px - (px - v.x) * k, y: py - (py - v.y) * k })
     })
   }
 
@@ -99,17 +131,22 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
     const dy = e.clientY - d.y
     d.x = e.clientX
     d.y = e.clientY
-    if (view.s > 1) setView((v) => ({ ...v, x: v.x + dx, y: v.y + dy }))
+    if (view.s > 1) setView((v) => bound({ ...v, x: v.x + dx, y: v.y + dy }))
   }
   const onPointerUp = (e: React.PointerEvent) => {
     pointers.current.delete(e.pointerId)
     if (pointers.current.size < 2) pinch.current = null
     const d = drag.current
     drag.current = null
-    if (d && view.s === 1) {
-      const dx = e.clientX - d.vx
-      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(e.clientY - d.vy)) step(dx < 0 ? 1 : -1)
-    }
+    if (!d) return
+    const dx = e.clientX - d.vx
+    const sideways = Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(e.clientY - d.vy)
+    if (!sideways) return
+    if (view.s === 1) return step(dx < 0 ? 1 : -1)
+    // dragging past either end of a zoomed board moves to the next one
+    const edge = bound({ ...view, x: 1e6 }).x
+    if (dx > 0 && view.x >= edge - 1) step(-1)
+    else if (dx < 0 && view.x <= -edge + 1) step(1)
   }
 
   if (!open || !b) return null
@@ -132,7 +169,7 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
           </div>
         </div>
         <div className="flex items-center gap-2 md:gap-3 shrink-0">
-          <span className="hidden md:inline eyebrow text-card/40 mr-2">Scroll or pinch to zoom · drag to pan</span>
+          <span className="hidden lg:inline [@media(hover:none)]:!hidden eyebrow text-card/40 mr-2">Scroll or pinch to zoom · drag to pan</span>
           <a
             href={fullSrc(b.page)}
             target="_blank"
@@ -160,7 +197,12 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        onDoubleClick={(e) => (view.s > 1 ? setView(ID) : zoomAt(e.clientX, e.clientY, 2.5))}
+        onDoubleClick={(e) => {
+          const f = fit()
+          if (view.s > 1 && Math.abs(view.s - f.s) > 0.01) setView(f)
+          else if (view.s > 1) setView(ID)
+          else zoomAt(e.clientX, e.clientY, 2.5)
+        }}
       >
         <div
           className="absolute inset-0 grid place-items-center px-2 md:px-16"
@@ -169,7 +211,7 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
             transition: drag.current || pinch.current ? 'none' : 'transform 0.35s cubic-bezier(.2,.7,.1,1)',
           }}
         >
-          <div className="relative w-full max-h-full" style={{ aspectRatio: '7016 / 2482', maxWidth: 'min(100%, calc((100vh - 170px) * 2.8267))' }}>
+          <div ref={frame} className="relative w-full max-h-full" style={{ aspectRatio: '7016 / 2482', maxWidth: 'min(100%, calc((100vh - 170px) * 2.8267))' }}>
             <img
               src={thumbSrc(b.page)}
               alt=""
@@ -190,7 +232,7 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
       </div>
 
       <div className="flex items-center justify-between px-4 md:px-8 py-4 md:py-5">
-        <button onClick={() => step(-1)} className="eyebrow hover:text-thread transition-colors py-2">
+        <button onClick={() => step(-1)} className="eyebrow hover:text-thread transition-colors py-3 pr-3">
           ← Prev
         </button>
         <div className="flex-1 mx-6 md:mx-12 relative h-px bg-card/15">
@@ -198,16 +240,19 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
             className="absolute left-0 top-0 h-[1.5px] bg-thread transition-all duration-500"
             style={{ width: `${((index + 1) / boards.length) * 100}%` }}
           />
+          <span className="hidden [@media(hover:none)]:block absolute left-1/2 -translate-x-1/2 top-3 eyebrow !text-[9px] text-card/45 whitespace-nowrap">
+            Drag to read · pinch to zoom
+          </span>
           <a
             href={contact.portfolioPdf}
             target="_blank"
             rel="noopener"
-            className="hidden md:block absolute left-1/2 -translate-x-1/2 top-3 eyebrow text-card/40 hover:text-card"
+            className="hidden md:block [@media(hover:none)]:!hidden absolute left-1/2 -translate-x-1/2 top-3 eyebrow text-card/40 hover:text-card"
           >
             Download full portfolio PDF
           </a>
         </div>
-        <button onClick={() => step(1)} className="eyebrow hover:text-thread transition-colors py-2">
+        <button onClick={() => step(1)} className="eyebrow hover:text-thread transition-colors py-3 pl-3">
           Next →
         </button>
       </div>

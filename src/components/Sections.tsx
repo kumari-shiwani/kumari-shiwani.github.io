@@ -98,19 +98,19 @@ export default function Sections() {
               Spec sheet · four stages every garment passes through
             </p>
           </div>
-          <div className="grid md:grid-cols-4 border-t-[1.5px] border-ink">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 border-t-[1.5px] border-ink">
             {process.map((p, i) => (
               <article
                 data-reveal
                 key={p.no}
-                className="group relative pt-6 pb-10 md:pr-8 md:pl-6 first:md:pl-0 border-b md:border-b-0 border-ink/15 [&:not(:last-child)]:md:border-r"
+                className="group relative pt-6 pb-10 sm:pr-6 lg:pr-8 lg:pl-6 lg:first:pl-0 border-b lg:border-b-0 border-ink/15 lg:[&:not(:last-child)]:border-r"
                 style={{ transitionDelay: `${i * 90}ms` }}
               >
                 <div className="flex items-center justify-between eyebrow">
                   <span className="text-thread">Stage {p.no}</span>
                   <span className="text-muted">{['Research', 'Concept', 'Tech pack', 'Production'][i]}</span>
                 </div>
-                <h3 className="font-serif italic text-5xl md:text-6xl mt-8">{p.title}</h3>
+                <h3 className="font-serif italic text-5xl xl:text-6xl mt-6 md:mt-8">{p.title}</h3>
                 <p className="text-[15px] leading-relaxed text-ink/75 mt-4 max-w-xs">{p.body}</p>
                 <div className="stitch text-thread absolute left-0 right-8 bottom-4 scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-700" />
               </article>

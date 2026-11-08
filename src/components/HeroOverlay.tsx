@@ -26,7 +26,7 @@ export default function HeroOverlay({ ready }: { ready: boolean }) {
     <div ref={ref} className="fixed inset-0 z-10 pointer-events-none flex flex-col justify-end px-4 md:px-8 pb-6 md:pb-8">
       <div className="grid md:grid-cols-12 gap-6 items-end">
         <div className="md:col-span-8">
-          <p className="eyebrow text-muted mb-4 md:mb-6 overflow-hidden">
+          <p className="eyebrow text-muted mb-4 md:mb-6 overflow-hidden [@media(max-height:700px)]:hidden">
             <span className="inline-block" style={{ animation: 'rise 1s cubic-bezier(.2,.7,.1,1) 1.7s both', ...play }}>
               Portfolio ’26 — Sportswear, Knitwear & Kidswear Design
             </span>
@@ -60,7 +60,7 @@ export default function HeroOverlay({ ready }: { ready: boolean }) {
             <span className="eyebrow">
               Scroll to walk the line
               <br />
-              <span className="text-muted hidden md:inline">or press I for the index</span>
+              <span className="text-muted [@media(hover:none)]:hidden">or press I for the index</span>
             </span>
           </div>
         </div>

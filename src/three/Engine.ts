@@ -650,7 +650,8 @@ export class Engine {
     const aspect = this.camera.aspect
     const vfov = THREE.MathUtils.degToRad(this.camera.fov)
     const hfov = 2 * Math.atan(Math.tan(vfov / 2) * aspect)
-    const want = aspect < 1 ? W * 1.0 : W * 1.5
+    const portrait = aspect < 1
+    const want = portrait ? W * 1.1 : W * 1.5
     const dist = clamp(want / 2 / Math.tan(hfov / 2), 3.1, 12)
     const p = P(s)
     p.y -= 0.5
@@ -661,9 +662,9 @@ export class Engine {
     pos
       .copy(p)
       .addScaledVector(n, dist)
-      .addScaledVector(t, -dist * 0.3 + px * 0.25)
+      .addScaledVector(t, -dist * (portrait ? 0.07 : 0.3) + px * 0.25)
     pos.y += 0.16 + py * 0.14
-    look.copy(p).addScaledVector(t, dist * 0.09)
+    look.copy(p).addScaledVector(t, dist * (portrait ? 0.02 : 0.09))
     look.y -= 0.02
   }
 
@@ -919,7 +920,7 @@ export class Engine {
       }
       const x = (v.x * 0.5 + 0.5) * window.innerWidth
       const y = (-v.y * 0.5 + 0.5) * window.innerHeight
-      const sc = clamp(4.2 / d, 0.15, 1.6)
+      const sc = clamp(4.2 / d, 0.15, 1.6) * clamp(window.innerHeight / 900, 0.5, 1.15)
       const op = (1 - THREE.MathUtils.smoothstep(d, 9, 20)) * (1 - im) * THREE.MathUtils.smoothstep(this.heroT, 0.7, 0.98)
       el.style.visibility = op > 0.01 ? 'visible' : 'hidden'
       el.style.opacity = String(op)

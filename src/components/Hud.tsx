@@ -64,8 +64,8 @@ export default function Hud({ show, focus, chapter, progressRef, onChapter, onOp
               </span>
               <span className="block text-[15px] md:text-[17px] font-medium mt-1">{b.title}</span>
               <span className="eyebrow text-thread block mt-1.5 opacity-80 group-hover:opacity-100">
-                <span className="hidden md:inline">Click board or press Enter</span>
-                <span className="md:hidden">Tap to open</span> ↗
+                <span className="[@media(hover:none)]:hidden">Click board or press Enter</span>
+                <span className="hidden [@media(hover:none)]:inline">Tap to open</span> ↗
               </span>
             </span>
           </button>

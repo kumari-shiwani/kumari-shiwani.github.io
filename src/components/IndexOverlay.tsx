@@ -15,8 +15,8 @@ export default function IndexOverlay({ show, hover, onClose }: Props) {
         <p className="eyebrow text-thread">The archive</p>
         <p className="font-serif italic text-3xl md:text-4xl mt-1 mb-3">82 boards around you</p>
         <p className="eyebrow text-muted max-w-[16rem]">
-          <span className="hidden md:inline">Drag, scroll or move to the edge to turn</span>
-          <span className="md:hidden">Swipe to turn</span>
+          <span className="[@media(hover:none)]:hidden">Drag, scroll or move to the edge to turn</span>
+          <span className="hidden [@media(hover:none)]:inline">Swipe to turn</span>
           <br />
           Select a board to fly to it
         </p>
@@ -32,8 +32,8 @@ export default function IndexOverlay({ show, hover, onClose }: Props) {
             </div>
           )}
         </div>
-        <button onClick={onClose} className="pointer-events-auto eyebrow hover:text-thread transition-colors">
-          Esc · Back to the line
+        <button onClick={onClose} className="pointer-events-auto eyebrow hover:text-thread transition-colors py-2">
+          <span className="[@media(hover:none)]:hidden">Esc · </span>Back to the line
         </button>
       </div>
     </div>
