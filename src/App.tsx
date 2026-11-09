@@ -127,7 +127,11 @@ export default function App() {
           e.preventDefault()
           step(-1)
         }
-        if (e.key === 'Enter' && focus >= 0) setOpen(focus)
+        if (e.key === 'Enter' && focus >= 0) {
+          // stop the same keypress from also "clicking" the viewer's Close button once it takes focus
+          e.preventDefault()
+          setOpen(focus)
+        }
       }
     }
     window.addEventListener('keydown', onKey)

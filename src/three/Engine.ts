@@ -197,7 +197,7 @@ export class Engine {
         uPointer: { value: new THREE.Vector2(0, -0.5) },
         uPointerForce: { value: 0 },
         uWidth: { value: W },
-        uCalm: { value: this.reduced ? 0.3 : 1 },
+        uCalm: { value: this.reduced ? 0.5 : 1 },
         uMap: { value: placeholder },
         uReady: { value: 0 },
         uOpacity: { value: 1 },
@@ -689,7 +689,7 @@ export class Engine {
     const vfov = THREE.MathUtils.degToRad(this.camera.fov)
     const hfov = 2 * Math.atan(Math.tan(vfov / 2) * aspect)
     const portrait = aspect < 1
-    const want = portrait ? W * (aspect < 0.6 ? 1.2 : 1.36) : W * 1.5
+    const want = portrait ? W * (aspect < 0.6 ? 1.08 : 1.36) : W * 1.5
     const dist = clamp(want / 2 / Math.tan(hfov / 2), 3.1, 12)
     const p = P(s)
     p.y -= 0.5
@@ -794,7 +794,7 @@ export class Engine {
     const vel = (this.sCam - this.sPrevCam) / Math.max(dt, 1e-4)
     this.sPrevCam = this.sCam
     this.wind = damp(this.wind, clamp(vel * 0.05, -1.3, 1.3), 4, dt)
-    if (this.reduced) this.wind *= 0.3
+    if (this.reduced) this.wind *= 0.5
 
     this.indexMix = damp(this.indexMix, this.indexTarget, this.indexTarget ? 1.9 : 2.4, dt)
     if (Math.abs(this.indexMix - this.indexTarget) < 0.0005) this.indexMix = this.indexTarget
@@ -814,7 +814,7 @@ export class Engine {
     if (im > 0) {
       this.yaw = damp(this.yaw, this.yawTarget, 6, dt)
       if (!this.dragging && !this.pointerIsTouch) this.yawTarget += this.pointerN.x * 0.35 * dt * (this.pointerN.x ** 2 > 0.36 ? 1 : 0)
-      this.pitch = damp(this.pitch, this.pointerIsTouch ? 0 : this.pointerN.y * 0.22, 3, dt)
+      this.pitch = damp(this.pitch, this.par.y * 0.22, 3, dt)
       const e = ease(im)
       const ip = this.indexCenter
       const lookI = this.lookI.set(
@@ -874,8 +874,11 @@ export class Engine {
     // air current (touch screens): a gusting breeze on every board, and on the board in
     // front a slow drifting ripple with a breathing lift, as a resting laptop cursor gives
     const airOn = (this.touchDevice || this.pointerIsTouch) && !(this.touchActive && felt !== null)
-    const calm = this.reduced ? 0.3 : 1
-    const breeze = airOn ? (0.12 * Math.sin(time * 0.23) + 0.4 * Math.max(0, Math.sin(time * 0.33)) ** 2 + 0.12) * calm : 0
+    // Reduce Motion keeps a calmer breeze rather than freezing the cloth
+    const calm = this.reduced ? 0.5 : 1
+    // small portrait phones show the board small: the cloth moves more so the air still reads
+    const amp = this.camera.aspect < 0.6 ? 1.6 : this.camera.aspect < 1 ? 1.25 : 1
+    const breeze = airOn ? (0.12 * Math.sin(time * 0.23) + 0.4 * Math.max(0, Math.sin(time * 0.33)) ** 2 + 0.12) * calm * amp : 0
     const airI = airOn && this.heroT > 0.6 && im < 0.5 ? this.focus : -1
 
     // boards
@@ -912,7 +915,8 @@ export class Engine {
       u.uWind.value = (this.wind + breeze) * (1 - e)
       u.uFlutter.value = Math.min(speed * 0.06, 1.4)
       u.uHover.value = b.hover
-      u.uPointerForce.value = this.reduced ? b.force * 0.3 : b.force
+      u.uPointerForce.value = b.force * calm * (isAir ? amp : 1)
+      u.uCalm.value = calm * amp
       u.uFogNear.value = fn
       u.uFogFar.value = ff
       if (b.thumb && u.uReady.value < 1) u.uReady.value = Math.min(1, u.uReady.value + dt * 2)
