@@ -79,7 +79,7 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
       if (e.key === 'Escape') onClose()
       if (e.key === 'ArrowRight') step(1)
       if (e.key === 'ArrowLeft') step(-1)
-      if (e.key === '+' || e.key === '=') setView((v) => ({ ...v, s: Math.min(5, v.s * 1.4) }))
+      if (e.key === '+' || e.key === '=') setView((v) => bound({ ...v, s: Math.min(10, v.s * 1.4) }))
       if (e.key === '-') setView((v) => (v.s / 1.4 <= 1.02 ? ID : { ...v, s: v.s / 1.4 }))
     }
     window.addEventListener('keydown', onKey)
@@ -93,11 +93,19 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
     const px = cx - r.left - r.width / 2
     const py = cy - r.top - r.height / 2
     setView((v) => {
-      const s = Math.min(6, Math.max(1, v.s * factor))
+      const s = Math.min(10, Math.max(1, v.s * factor))
       if (s === 1) return ID
       const k = s / v.s
       return bound({ s, x: px - (px - v.x) * k, y: py - (py - v.y) * k })
     })
+  }
+
+  /** the visible + / − buttons zoom about the middle of the screen */
+  const zoomBy = (factor: number) => {
+    const el = stage.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    zoomAt(r.left + r.width / 2, r.top + r.height / 2, factor)
   }
 
   const onWheel = (e: React.WheelEvent) => {
@@ -105,6 +113,7 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
   }
 
   const onPointerDown = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest('[data-zoom]')) return
     ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     if (pointers.current.size === 2) {
@@ -121,7 +130,7 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
     if (pinch.current && pointers.current.size === 2) {
       const [a, c] = [...pointers.current.values()]
       const d = Math.hypot(a.x - c.x, a.y - c.y)
-      const target = Math.min(6, Math.max(1, (pinch.current.s * d) / pinch.current.d))
+      const target = Math.min(10, Math.max(1, (pinch.current.s * d) / pinch.current.d))
       zoomAt((a.x + c.x) / 2, (a.y + c.y) / 2, target / view.s)
       return
     }
@@ -228,6 +237,38 @@ export default function Lightbox({ index, onClose, onNavigate }: Props) {
               draggable={false}
             />
           </div>
+        </div>
+
+        {/* zoom controls, on every device */}
+        <div
+          data-zoom
+          className="absolute bottom-3 md:bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full bg-[#12110f]/80 backdrop-blur border border-card/20 p-1 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.6)]"
+          onDoubleClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => zoomBy(1 / 1.5)}
+            disabled={view.s <= 1}
+            className="w-10 h-10 rounded-full grid place-items-center text-xl leading-none hover:bg-card hover:text-ink transition-colors disabled:opacity-30 disabled:pointer-events-none"
+            aria-label="Zoom out"
+          >
+            −
+          </button>
+          <button
+            onClick={() => setView(ID)}
+            className="min-w-[4.25rem] h-10 rounded-full px-2 font-mono text-[12px] tabular-nums hover:bg-card hover:text-ink transition-colors"
+            aria-label="Reset zoom"
+            title="Reset zoom"
+          >
+            {Math.round(view.s * 100)}%
+          </button>
+          <button
+            onClick={() => zoomBy(1.5)}
+            disabled={view.s >= 9.99}
+            className="w-10 h-10 rounded-full grid place-items-center text-xl leading-none hover:bg-card hover:text-ink transition-colors disabled:opacity-30 disabled:pointer-events-none"
+            aria-label="Zoom in"
+          >
+            +
+          </button>
         </div>
       </div>
 

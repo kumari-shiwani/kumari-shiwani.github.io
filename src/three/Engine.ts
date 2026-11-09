@@ -94,6 +94,10 @@ export class Engine {
   private par = new THREE.Vector2()
   /** touch screens have no resting cursor, so an air current plays its part */
   private touchDevice = window.matchMedia('(hover: none)').matches
+  /** adaptive resolution: keep the cloth moving smoothly on slower phones and tablets */
+  private dpr = Math.min(window.devicePixelRatio, 2)
+  private frameAcc = 0
+  private frameN = 0
   private overCanvas = false
   private clientX = -1
   private clientY = -1
@@ -685,7 +689,7 @@ export class Engine {
     const vfov = THREE.MathUtils.degToRad(this.camera.fov)
     const hfov = 2 * Math.atan(Math.tan(vfov / 2) * aspect)
     const portrait = aspect < 1
-    const want = portrait ? W * 1.32 : W * 1.5
+    const want = portrait ? W * (aspect < 0.6 ? 1.2 : 1.36) : W * 1.5
     const dist = clamp(want / 2 / Math.tan(hfov / 2), 3.1, 12)
     const p = P(s)
     p.y -= 0.5
@@ -696,9 +700,9 @@ export class Engine {
     pos
       .copy(p)
       .addScaledVector(n, dist)
-      .addScaledVector(t, -dist * (portrait ? 0.16 : 0.3) + px * 0.25)
+      .addScaledVector(t, -dist * (portrait ? 0.5 : 0.3) + px * 0.25)
     pos.y += 0.16 + py * 0.14
-    look.copy(p).addScaledVector(t, dist * (portrait ? 0.05 : 0.09))
+    look.copy(p).addScaledVector(t, dist * (portrait ? -0.035 : 0.09))
     look.y -= 0.02
   }
 
@@ -745,7 +749,21 @@ export class Engine {
   private loop = () => {
     if (this.disposed) return
     this.raf = requestAnimationFrame(this.loop)
-    const dt = Math.min(this.clock.getDelta(), 1 / 20)
+    const rawDt = this.clock.getDelta()
+    const dt = Math.min(rawDt, 1 / 20)
+    if (!this.paused && rawDt < 0.5) {
+      this.frameAcc += rawDt
+      if (++this.frameN === 90) {
+        // under ~45 fps on average: drop resolution a notch (never below 1x)
+        if (this.frameAcc / this.frameN > 1 / 45 && this.dpr > 1) {
+          this.dpr = Math.max(1, this.dpr - 0.25)
+          this.renderer.setPixelRatio(this.dpr)
+          this.renderer.setSize(window.innerWidth, window.innerHeight, false)
+        }
+        this.frameAcc = 0
+        this.frameN = 0
+      }
+    }
     const time = this.clock.elapsedTime
     if (this.paused) return
 
